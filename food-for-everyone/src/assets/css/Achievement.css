@@ -1,0 +1,35 @@
+.nearPostCardImage {
+    width: 280px;
+    height: auto;
+}
+
+#filterImg {
+    height: auto;
+    width: 25px;
+}
+
+.searchInput {
+    padding: 8px 20px;
+    margin: 0 10px;
+    outline: none;
+    border: 1px solid#157347;
+    border-radius: 6px;
+    color: black;
+}
+
+.TableHead {
+    font-size: 18px;
+}
+
+.rating-number {
+    font-size: 50px;
+    font-weight: 500;
+    small {
+        font-size: 16px;
+    }
+}
+
+.progress,
+.progress-bar {
+    border-radius: 10px;
+}

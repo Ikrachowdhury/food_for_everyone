@@ -1,0 +1,8 @@
+.TableHead {
+    font-size: 18px;
+}
+
+.table th,
+.table td {
+    padding: 15px;
+}

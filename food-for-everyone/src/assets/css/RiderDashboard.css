@@ -1,0 +1,16 @@
+.riderMain {
+    min-width: 1382px;
+}
+
+.BackgroundColor {
+    background-color: #f8f9fa;
+}
+
+.runningCard {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.border-end {
+    border-right: 1px solid #dee2e6;
+}

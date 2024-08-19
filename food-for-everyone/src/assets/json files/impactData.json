@@ -1,0 +1,19 @@
+[{
+        "value": "5,700",
+        "description": "Food Donating Branches",
+        "image": "../../src/images/impact1.png",
+        "imageClass": "image-94"
+    },
+    {
+        "value": "10",
+        "description": "Years operating",
+        "image": "../../src/images/impact2.png",
+        "imageClass": "image-94"
+    },
+    {
+        "value": "259m",
+        "description": "Meals redistributed in Bangladesh",
+        "image": "../../src/images/impact4.png",
+        "imageClass": "image-94"
+    }
+]

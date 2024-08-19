@@ -1,0 +1,50 @@
+.receivedrating {
+    /* margin: 190px auto; */
+    width: 400px;
+    margin: auto;
+    margin-top: 15px;
+}
+
+.receivedrating>* {
+    float: right;
+    margin-bottom: 0;
+}
+
+.receivedrating label {
+    height: 80px;
+    width: 20%;
+    display: block;
+    position: relative;
+    cursor: pointer;
+}
+
+.receivedrating label::after {
+    transition: all 0.4s ease-out;
+    -webkit-font-smoothing: antialised;
+    position: absolute;
+    content: "☆";
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 40px;
+    -webkit-animation: 1s pulse ease;
+    animation: 1s pulse ease;
+}
+
+.receivedrating label:hover::after {
+    color: #f9bf3b;
+    /* text-shadow: 0 0 15px #f9bf3b; */
+}
+
+.receivedrating input {
+    display: none;
+}
+
+.receivedrating input:checked+label::after,
+.receivedrating input:checked~label::after {
+    content: "★";
+    color: #f9bf3b;
+    text-shadow: 0 0 20px#f9bf3b;
+}

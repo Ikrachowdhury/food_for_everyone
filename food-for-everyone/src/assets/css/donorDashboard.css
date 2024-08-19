@@ -1,0 +1,143 @@
+.containerBody {
+    position: relative;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+}
+
+.post-body {
+    width: 74%;
+    max-width: 80%;
+    overflow: hidden;
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 9px;
+    box-shadow: 2px 2px 12px 0px rgb(170, 170, 170);
+}
+
+.user-info {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+h5 {
+    display: inline-block;
+    position: relative;
+    top: 5px;
+}
+
+.user-pro-pic {
+    position: relative;
+    width: 50px;
+    border-radius: 50px;
+}
+
+.deleteicon {
+    color: rgb(245, 108, 108);
+}
+
+.editicon {
+    color: rgb(107, 107, 255);
+}
+
+.date-time {
+    position: relative;
+    margin-left: 3.1rem;
+    top: -14px;
+    font-size: 13px;
+}
+
+.Title {
+    position: relative;
+    padding: 0.5rem;
+}
+
+.serves {
+    font-size: 18px;
+}
+
+
+/* .post-detail {
+    display: flex;
+    justify-content: center;
+} */
+
+.upload-img {
+    position: relative;
+    max-width: 90%;
+}
+
+
+/* .likes-comment-preview {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem;
+    justify-content: space-between;
+} */
+
+
+/* 
+.likes-preview {
+    display: flex;
+    align-items: center;
+}
+
+.likes-preview .thumbs-up {
+    font-size: 26px;
+    position: relative;
+    border-radius: 50px;
+    background-color: rgb(19, 128, 200);
+    color: white;
+    padding: 5%;
+    border-radius: 2px solid white;
+    z-index: 1;
+} */
+
+
+/* .love {
+    font-size: 30px;
+    position: relative;
+    margin-left: -7px;
+    margin-top: -2px;
+} */
+
+
+/* 
+.count-likes {
+    margin-left: 2%;
+    margin-top: 3px;
+    margin-left: 5px;
+} */
+
+
+/* .like-comment-share-icons {
+    position: relative;
+    width: 100%;
+    border-top: 1px solid gray;
+    padding: 1rem 0;
+    display: flex;
+    justify-content: space-evenly;
+    font-size: 20px;
+    color: rgb(51, 51, 51);
+} */
+
+
+/* 
+.like-comment-share-icons>div {
+    cursor: pointer;
+} */
+
+
+/* .post-option-icons>span {
+    position: relative;
+    margin: 0 1rem;
+    color: rgb(46, 46, 46);
+}
+
+.post-option-icons {
+    color: rgb(78, 78, 78);
+    font-size: 18px;
+} */

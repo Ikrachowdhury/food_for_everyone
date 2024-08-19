@@ -2,15 +2,12 @@
         "title": "Individual",
         "description": "Get food for an individual person",
         "image": "../src/images/img1.png",
-        "link": "/login",
-        "value": "/individualRegistration"
+        "link": "/individualRegistration"
     },
     {
         "title": "Organization",
         "description": "Get food for an organization",
         "image": "../src/images/organizations.png",
-        "link": "/login",
-        "value": "/organizationRegistration"
-
+        "link": "/organizationRegistration"
     }
 ]

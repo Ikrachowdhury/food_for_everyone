@@ -12,7 +12,7 @@ import DirectDonation from './pages/Donor/DirectDonation'
 import DonateMoney from './pages/Donor/DonateMoney'
 import History from './pages/Donor/History'
 import { Login } from './components/Login'
-import { DonerRegistration } from './components/DonerRegistration'
+// import { DonerRegistration } from './components/DonerRegistration'
 import GetFoodOption from './components/GetFoodOption'
 import { IndividualRegistration } from './components/IndividualRegistration'
 import { OraganizationRegistration } from './components/OrganizationRegistration'
@@ -23,12 +23,12 @@ import Profile from './pages/Profile'
 import Message from './pages/Message'
 // import RequestedDelivery from './pages/Volunteer/RequestedDelivery'
 // import RunningDelivery from './pages/Volunteer/RunningDelivery'
-import DonorList from './pages/Admin/DonorList'
+// import DonorList from './pages/Admin/DonorList'
 import DoneeList from './pages/Admin/DoneeList'
 import OrganizationList from './pages/Admin/OrganizationList'
 import RiderList from './pages/Admin/RiderList'
-import DonationPostList from './pages/Admin/DonationPostList'
-import PaymentMoneyList from './pages/Admin/PaymentMoneyList'
+// import DonationPostList from './pages/Admin/DonationPostList'
+// import PaymentMoneyList from './pages/Admin/PaymentMoneyList'
 import Dashboard from './pages/Donor/Dashboard'
 import AddNewDonation from './pages/Donor/AddNewDonation'
 import ReceiverDashboard from './pages/Receiver/ReceiverDashboard'
@@ -45,7 +45,7 @@ function App() {
           <Route path='/login' exact element={<Login />}></Route>
           <Route path='/individualRegistration' exact element={<IndividualRegistration />}></Route>
           <Route path='/organizationRegistration' exact element={<OraganizationRegistration />}></Route>
-          <Route path='/donerRegistration' exact element={<DonerRegistration />}></Route>
+          {/* <Route path='/donerRegistration' exact element={<DonerRegistration />}></Route> */}
           <Route path='/getFoodOption' exact element={<GetFoodOption />}></Route>
           {/* <Route path='/receiverDashboard' exact element={<ReceiverDashboard />}></Route> */}
           {/* <Route path='/donorDashboard' exact element={<DonorDashboard />}></Route> */}
@@ -62,12 +62,12 @@ function App() {
           <Route path='/message' exact element={<Message />}></Route>
           {/* <Route path='/requestedDelivery' exact element={<RequestedDelivery />}></Route> */}
           {/* <Route path='/runningDelivery' exact element={<RunningDelivery />}></Route> */}
-          <Route path='/donorList' exact element={<DonorList />}></Route>
+          {/* <Route path='/donorList' exact element={<DonorList />}></Route> */}
           <Route path='/doneeList' exact element={<DoneeList />}></Route>
           <Route path='/organizationList' exact element={<OrganizationList />}></Route>
           <Route path='/riderList' exact element={<RiderList />}></Route>
-          <Route path='/donationPostList' exact element={<DonationPostList />}></Route>
-          <Route path='/paymentMoneyList' exact element={<PaymentMoneyList />}></Route>
+          {/* <Route path='/donationPostList' exact element={<DonationPostList />}></Route> */}
+          {/* <Route path='/paymentMoneyList' exact element={<PaymentMoneyList />}></Route> */}
           <Route path='/dashboard' exact element={<Dashboard />}></Route>
           <Route path='/receiverDashboard' exact element={<ReceiverDashboard />}></Route>
           <Route path='/addNewDonation' exact element={<AddNewDonation />}></Route>

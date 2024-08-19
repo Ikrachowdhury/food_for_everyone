@@ -11,12 +11,6 @@
     width: 100%;
 }
 
-
-/* .registrationInput2 {
-    border: 1px solid #a5a0a0;
-    height: 6rem;
-} */
-
 .heading3 {
     color: #555;
 }
@@ -69,28 +63,6 @@
     border-radius: 5px;
 }
 
-
-/* .DoneeOption {
-    height: 50px;
-    padding: 10px;
-} */
-
-
-/* .uploaded-row {
-    margin: 10px 10px 10px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-radius: 5px;
-    width: 100%;
-    background-color: #e9f0ff;
-} */
-
-
-/* .fileNameContainer {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal;
-    max-width: 100%;
-} */
+.registration-content {
+    min-width: 900px;
+}

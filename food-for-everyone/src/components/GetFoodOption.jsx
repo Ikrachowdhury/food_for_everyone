@@ -3,12 +3,12 @@ import '../assets/css/GetFoodOption.css'
 // import Sidebar from '../components/Sidebar';
 
 const GetFoodOption = () => {
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const value = urlParams.get('value');
+    const urlParams = new URLSearchParams(window.location.search);
+    const value = urlParams.get('value');
     const renderOptionCards = () => {
         return jsonData.map((card, index) => (
             <div className="col text-center px-5 py-5 " key={index}>
-                <a href={`${card.link}?value=${card.value}`} className="cardLink">
+                <a href={`${card.link}?value=${value}`} className="cardLink">
                     <div className="card shadow" >
                         <div className="thumbnail-image-wrapper">
                             <img src={card.image} className="card-img-top thumbnail-image" alt="..." />

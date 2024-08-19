@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import '../assets/css/sidebar.css';
 import { useNavigate } from 'react-router-dom';
-import { MdDashboard, MdFastfood, MdMessage, MdOutlineDirectionsBike, MdSendAndArchive } from "react-icons/md";
-import { BiSolidDonateHeart } from 'react-icons/bi';
-import { GiAchievement, GiPayMoney, GiReceiveMoney, GiTakeMyMoney } from 'react-icons/gi';
+import { MdDashboard, MdFastfood, MdMessage, MdOutlineDirectionsBike } from "react-icons/md";
+import { BiSolidDonateHeart, BiSolidReport } from 'react-icons/bi';
+import { GiAchievement, GiPayMoney, GiReceiveMoney } from 'react-icons/gi';
 import { CiSquareQuestion } from 'react-icons/ci';
 import { FcMoneyTransfer, FcMultipleInputs } from 'react-icons/fc';
-import { FaClipboardList, FaHistory, FaUsers } from 'react-icons/fa';
+import {  FaHistory, FaUsers } from 'react-icons/fa';
 // import { IoIosArrowDown } from 'react-icons/io';
 import { useSelector } from 'react-redux';
 import { TiArrowSortedDown } from 'react-icons/ti';
@@ -43,7 +43,7 @@ export default function Sidebar() {
 
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <ul className="nav-list">
-          {value === 'Donor' ? (
+          {value === 'donor' ? (
             <>
               <li>
                 <div onClick={() => navigate('/dashboard')} className='listDiv'>
@@ -114,7 +114,7 @@ export default function Sidebar() {
                 </div>
               </li> */}
             </>
-          ) : value === 'Donee' ? (
+          ) : value === 'donee' ? (
             <>
               <li>
                 <div onClick={() => navigate('/receiverDashboard')} className='listDiv'>
@@ -135,13 +135,31 @@ export default function Sidebar() {
                 </div>
               </li>
               <li>
-                <div onClick={() => navigate('/message')} className='listDiv'>
+                <div className='listDiv collapsed has-dropdown' data-bs-toggle="collapse" data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
                   <MdMessage className='icons' style={{ color: "#841B2D" }} />
-                  <span className="link_name">Message</span>
+                  <div>
+                    <span className="link_name ">Message </span>
+                    <span className="link_name"><TiArrowSortedDown /></span>
+                  </div>
                 </div>
+                <ul id="auth" className="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                  <li>
+                    <div onClick={() => navigate('/requestedDonation')} className='sublistDiv listDiv'>
+                      <FaUsers className='icons' style={{ color: "red" }} />
+                      <span className="link_namee">Donor</span>
+                    </div>
+                  </li>
+                  <li>
+                    <div onClick={() => navigate('/requestedDonation')} className='sublistDiv listDiv'>
+                      <MdOutlineDirectionsBike className='icons' style={{ color: "blue" }} />
+                      <span className="link_namee">Rider</span>
+                      {/* <a href="#" className='link_name'>Request</a> */}
+                    </div>
+                  </li>
+                </ul>
               </li>
             </>
-          ) : value === 'Rider' ? (
+          ) : value === 'rider' ? (
             <>
               <li>
                 <div onClick={() => navigate('/riderDashboard')} className='listDiv'>
@@ -175,22 +193,22 @@ export default function Sidebar() {
           ) : null}
           {value === 'Admin' ? (
             <>
-              <li>
+              {/* <li>
                 <div onClick={() => navigate('/donorList')} className='listDiv'>
                   <MdSendAndArchive className='icons' style={{ color: "blue" }} />
                   <span className="link_name">Donors</span>
                 </div>
-              </li>
+              </li> */}
               <li>
                 <div onClick={() => navigate('/doneeList')} className='listDiv'>
                   <RiUserReceived2Fill className='icons' style={{ color: "red" }} />
-                  <span className="link_name">Donees</span>
+                  <span className="link_name">Organizations</span>
                 </div>
               </li>
               <li>
                 <div onClick={() => navigate('/organizationList')} className='listDiv'>
                   <GrOrganization className='icons' style={{ color: "pink" }} />
-                  <span className="link_name">Organizations</span>
+                  <span className="link_name">Request</span>
                 </div>
               </li>
               <li>
@@ -200,17 +218,23 @@ export default function Sidebar() {
                 </div>
               </li>
               <li>
+                <div onClick={() => navigate('/riderList')} className='listDiv'>
+                  <BiSolidReport  className='icons' style={{ color: "black" }} />
+                  <span className="link_name">Reports</span>
+                </div>
+              </li>
+              {/* <li>
                 <div onClick={() => navigate('/donationPostList')} className='listDiv'>
                   <FaClipboardList className='icons' style={{ color: "violet" }} />
                   <span className="link_name">Food Donations</span>
                 </div>
-              </li>
-              <li>
+              </li> */}
+              {/* <li>
                 <div onClick={() => navigate('/paymentMoneyList')} className='listDiv'>
                   <GiTakeMyMoney className='icons' style={{ color: "green" }} />
                   <span className="link_name">Money Donations</span>
                 </div>
-              </li>
+              </li> */}
             </>
           ) : null}
           <li className="profile">

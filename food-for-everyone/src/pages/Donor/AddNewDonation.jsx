@@ -2,17 +2,19 @@ import Sidebar from '../../components/Sidebar'
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../assets/css/AddNewDonation.css'
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MdCloudUpload } from 'react-icons/md';
 import Navbar from '../../components/Navbar';
 import { FaBoxesPacking } from 'react-icons/fa6';
 import { format } from 'date-fns';
+import { useLocation } from 'react-router-dom';
 
 export default function AddNewDonation() {
     const [selectedDate, setSelectedDate] = useState(null);
     const [receiveTime, setReceiveTime] = useState(null);
     const datePickerRef = useRef(null);
     const [name, setName] = useState("");
+    const [donationID, setDonationID] = useState(0);
     const [location, setLocation] = useState("");
     const [expireTime, setExpireTime] = useState(null);
     const [description, setDescription] = useState("");
@@ -26,6 +28,22 @@ export default function AddNewDonation() {
     const userId = localStorage.getItem('user_id');
     const formattedExpireDate = expireTime ? format(expireTime, 'dd/MM/yyyy') : '';
     const formattedReceiveDate = selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '';
+    const locations = useLocation();
+    const { donations } = locations.state || {};
+    const [urlArray, setUrlArray] = useState([]);
+    // const urlArray = [];
+    // console.log(donations);
+    useEffect(() => {
+        console.log("Updating urlArray");
+        setUrlArray([image1, image2, image3, image4].filter(img => img !== null));
+        console.log(urlArray);
+    }, [image1, image2, image3, image4]);
+    
+    const updateUrlArray = () => {
+        console.log("ok")
+        setUrlArray([image1, image2, image3, image4].filter(img => img !== null));
+        console.log(urlArray)
+    };
     const handleDoneeTypeChange = (e) => {
         setDoneeType(e.target.value);
     };
@@ -37,15 +55,53 @@ export default function AddNewDonation() {
 
     const handleImageChange = (e, index) => {
         console.log(e)
-        console.log(index)
+        // console.log(index)
         const files = [...profileImages];
         files[index] = e.target.files[0];
         setProfileImages(files);
     }
+    const handleRemoveImage1 = () => {
+        setImage1(null);
+        updateUrlArray();
+    };
+    const handleRemoveImage2 = () => {
+        console.log("ok")
+        setImage2(null);
+        updateUrlArray();
+    };
 
+    const handleRemoveImage3 = () => {
+        setImage3(null);
+        updateUrlArray();
+    };
+
+    const handleRemoveImage4 = () => {
+        setImage4(null);
+        updateUrlArray();
+    };
+
+    useEffect(() => {
+        if (donations) {
+            setDonationID(donations.donationPost.donation_id)
+            setImage1(donations.imagePaths[0]);
+            setImage2(donations.imagePaths[1]);
+            setImage3(donations.imagePaths[2]);
+            setImage4(donations.imagePaths[3]);
+            setName(donations.donationPost.post_name);
+            setDescription(donations.donationPost.post_description);
+            setServes(donations.donationPost.serves)
+            setReceiveTime(donations.donationPost.receive_time)
+            setLocation(donations.donationPost.pickup_location)
+            const [day, month, year] = donations.donationPost.last_receive_date.split('/');
+            setSelectedDate(new Date(`${year}-${month}-${day}`));
+            const [d, m, y] = donations.donationPost.expiredate.split('/');
+            setExpireTime(new Date(`${y}-${m}-${d}`));
+            updateUrlArray();
+        }
+    }, [donations]);
+// 
     async function newDonation(event) {
         event.preventDefault();
-        const urlArray = [];
         try {
             const uploadedUrls = await Promise.all(profileImages.map(async (image) => {
                 if (
@@ -74,7 +130,8 @@ export default function AddNewDonation() {
             }));
             uploadedUrls.forEach((url, index) => {
                 if (url) {
-                    urlArray.push(url);
+                    // urlArray.push(url);
+                    setUrlArray(url);
                     console.log(`Image ${index + 1} URL: ${url}`);
                 }
             });
@@ -84,6 +141,7 @@ export default function AddNewDonation() {
         }
 
         const formData = new FormData();
+        formData.append('donation_id',donationID)
         formData.append('user_id', userId);
         formData.append('post_name', name);
         formData.append('post_description', description);
@@ -97,7 +155,7 @@ export default function AddNewDonation() {
         formData.append('urlArray', JSON.stringify(urlArray));
         console.log(JSON.stringify(urlArray))
 
-        console.warn(name, description, serves, expireTime, selectedDate, receiveTime, doneeType, location, categories, urlArray);
+        console.log(donationID, name, description, serves, formattedExpireDate, formattedReceiveDate, receiveTime, doneeType, location, categories, urlArray);
         try {
             let response = await fetch("http://localhost:8000/api/newdonation", {
                 method: 'POST',
@@ -128,31 +186,32 @@ export default function AddNewDonation() {
                                 <form onSubmit={newDonation}>
                                     <div className='d-flex justify-content-between'>
                                         <h5 className=' fw-bold'><FaBoxesPacking /> Add New Donation</h5>
-                                        <button type="submit" className='donateButton' value="Submit" > ✓ Add Donation</button>
+                                        <button type="submit" className='donateButton' value="Submit">
+                                            {donations ? ("✓ Save Changes ") : ("✓ Add Donation ")}
+                                        </button>
                                     </div>
                                     <div className="mb-4">
-
                                         <div className="row mt-3">
                                             <div className="col-8 ">
                                                 <div className='px-4 py-2 columnBackground'>
                                                     <h5 className='mb-0'>General Information</h5>
                                                     <div className="my-3">
                                                         <label htmlFor="foodName" className="form-label mt-2 ">Title <span className="text-danger">*</span></label>
-                                                        <input type="text" className="form-control textBox" id="foodName" onChange={(e) => setName(e.target.value)} required="required" />
+                                                        <input type="text" className="form-control textBox" id="foodName" onChange={(e) => setName(e.target.value)} required="required" value={name} />
                                                     </div>
                                                     <div className="mb-3 ">
                                                         <label htmlFor="foodDescription" className="form-label mt-2">Food Description<span className="text-danger">*</span></label>
-                                                        <textarea className="form-control textBox" id="foodDescription" rows="3" onChange={(e) => setDescription(e.target.value)} required="required"></textarea>
+                                                        <textarea className="form-control textBox" id="foodDescription" rows="3" onChange={(e) => setDescription(e.target.value)} required="required" value={description}></textarea>
                                                     </div>
 
                                                     <div className="mb-5 row">
                                                         <div className="col mb-2">
                                                             <label htmlFor="contactNumber" className="form-label mt-2 ">Serves <span className="text-danger">*</span></label>
-                                                            <input type="number" className="form-control textBox" id="contactNumber" onChange={(e) => setServes(e.target.value)} required="required" />
+                                                            <input type="number" className="form-control textBox" id="contactNumber" onChange={(e) => setServes(e.target.value)} required="required" value={serves} />
                                                         </div>
                                                         <div className="col">
                                                             <label htmlFor="donee" className="form-label mt-2 ">Donee <span className="text-danger">*</span></label>
-                                                            <select className="form-control textBox" id="donee" value={doneeType} onChange={handleDoneeTypeChange}>
+                                                            <select className="form-control textBox" id="donee" value={donations?.donationPost?.pickup_location || doneeType} onChange={handleDoneeTypeChange}>
                                                                 <option>Organization</option>
                                                                 <option>Individual Person</option>
                                                                 <option>Anyone</option>
@@ -171,8 +230,13 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field1' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        setImage1(URL.createObjectURL(files[0]));
-                                                                        handleImageChange(e, 0);
+                                                                        if (donations) {
+                                                                            setImage1(donations.imagePaths[0]);
+                                                                            // handleImageChange(e, 0);
+                                                                        } else {
+                                                                            setImage1(URL.createObjectURL(files[0]));
+                                                                            handleImageChange(e, 0);
+                                                                        }
                                                                     }
                                                                 }} />
                                                                 {
@@ -181,16 +245,16 @@ export default function AddNewDonation() {
                                                                         :
                                                                         <>
                                                                             <MdCloudUpload color="#1475cf" size={60} />
-                                                                            {/* <p>Upload Image</p> */}
                                                                         </>
                                                                 }
                                                             </form>
                                                             <div>
                                                                 {
                                                                     image1 ?
-                                                                        <button className='btn btn-danger mb-3 w-100' onClick={() => {
-                                                                            setImage1(null)
-                                                                        }}>Remove</button>
+                                                                        <button className='btn btn-danger mb-3 w-100' onClick={handleRemoveImage1}>Remove</button>
+                                                                        // <button className='btn btn-danger mb-3 w-100' onClick={() => {
+                                                                        //     setImage1(null)
+                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -204,8 +268,15 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field2' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        setImage2(URL.createObjectURL(files[0]));
-                                                                        handleImageChange(e, 1);
+                                                                        if (donations) {
+                                                                            setImage2(donations.imagePaths[1]);
+                                                                            // handleImageChange(e, 1);
+                                                                        } else {
+                                                                            setImage2(URL.createObjectURL(files[0]));
+                                                                            handleImageChange(e, 1);
+                                                                        }
+                                                                        // setImage2(URL.createObjectURL(files[0]));
+
                                                                     }
                                                                 }} />
                                                                 {
@@ -214,16 +285,16 @@ export default function AddNewDonation() {
                                                                         :
                                                                         <>
                                                                             <MdCloudUpload color="#1475cf" size={40} />
-                                                                            {/* <p>Upload Image</p> */}
                                                                         </>
                                                                 }
                                                             </form>
                                                             <div>
                                                                 {
                                                                     image2 ?
-                                                                        <button className='btn btn-danger mb-3 w-100' onClick={() => {
-                                                                            setImage2(null)
-                                                                        }}>Remove</button>
+                                                                        <button className='btn btn-danger mb-3 w-100' onClick={handleRemoveImage2}>Remove</button>
+                                                                        // <button className='btn btn-danger mb-3 w-100' onClick={() => {
+                                                                        //     setImage2(null)
+                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -235,8 +306,13 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field3' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        setImage3(URL.createObjectURL(files[0]));
-                                                                        handleImageChange(e, 2);
+                                                                        if (donations) {
+                                                                            setImage3(donations.imagePaths[2]);
+                                                                            // handleImageChange(e, 2);
+                                                                        } else {
+                                                                            setImage3(URL.createObjectURL(files[0]));
+                                                                            handleImageChange(e, 2);
+                                                                        }
                                                                     }
                                                                 }} />
                                                                 {
@@ -252,9 +328,10 @@ export default function AddNewDonation() {
                                                             <div>
                                                                 {
                                                                     image3 ?
-                                                                        <button className='btn btn-danger mb-3 w-100' onClick={() => {
-                                                                            setImage3(null)
-                                                                        }}>Remove</button>
+                                                                        <button className='btn btn-danger mb-3 w-100' onClick={handleRemoveImage3}>Remove</button>
+                                                                        // <button className='btn btn-danger mb-3 w-100' onClick={() => {
+                                                                        //     setImage3(null)
+                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -266,8 +343,13 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field4' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        setImage4(URL.createObjectURL(files[0]));
-                                                                        handleImageChange(e, 3);
+                                                                        if (donations) {
+                                                                            setImage4(donations.imagePaths[3]);
+                                                                            // handleImageChange(e, 3);
+                                                                        } else {
+                                                                            setImage4(URL.createObjectURL(files[0]));
+                                                                            handleImageChange(e, 3);
+                                                                        }
                                                                     }
                                                                 }} />
                                                                 {
@@ -283,9 +365,10 @@ export default function AddNewDonation() {
                                                             <div>
                                                                 {
                                                                     image4 ?
-                                                                        <button className='btn mb-3 w-100 btn-danger' onClick={() => {
-                                                                            setImage4(null)
-                                                                        }}>Remove</button>
+                                                                        <button className='btn mb-3 w-100 btn-danger' onClick={handleRemoveImage4}>Remove</button>
+                                                                        // <button className='btn mb-3 w-100 btn-danger' onClick={() => {
+                                                                        //     setImage4(null)
+                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -300,21 +383,25 @@ export default function AddNewDonation() {
                                                     <h5 className='mb-0'>Time</h5>
                                                     <div className="my-3">
                                                         <label htmlFor="receiveTime" className="form-label mt-2 ">Receive Time<span className="text-danger">*</span><span className='text-muted exampleSpan'> (eg:10:00 AM to 5:00 PM)</span></label>
-                                                        <input type="text" className="form-control textBox" id="receiveTime" onChange={(e) => setReceiveTime(e.target.value)} required="required" />
+                                                        <input type="text" className="form-control textBox" id="receiveTime" onChange={(e) => setReceiveTime(e.target.value)} required="required" value={receiveTime} />
                                                     </div>
                                                     <div className="mb-3 row">
                                                         <div className="col">
                                                             <label htmlFor="expireTime" className="form-label mt-2">Expire Date <span className="text-danger">*</span></label>
                                                             <div className="input-group">
                                                                 <DatePicker
-                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={expireTime} onChange={(date) => setExpireTime(date)} id="expireTime" required />
+                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={expireTime}
+                                                                    onChange={(date) => setExpireTime(date)}
+                                                                    id="expireTime"
+                                                                    required="required" 
+                                                                    value={expireTime}/>
                                                             </div>
                                                         </div>
                                                         <div className="col">
                                                             <label htmlFor="lastReceiveTime" className="form-label mt-2">Last Receive Date <span className="text-danger">*</span></label>
                                                             <div className="input-group">
                                                                 <DatePicker
-                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={selectedDate} onChange={(date) => setSelectedDate(date)} id="lastReceiveTime" required />
+                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={selectedDate} onChange={(date) => setSelectedDate(date)} id="lastReceiveTime" required="required" value={selectedDate} />
                                                             </div>
                                                         </div>
 
@@ -325,7 +412,7 @@ export default function AddNewDonation() {
                                                 <h5 className='mb-0'>Category and Location</h5>
                                                 <div className="my-3">
                                                     <label htmlFor="category" className="form-label mt-2 ">Category <span className="text-danger">*</span></label>
-                                                    <select className="form-control textBox" id="category" value={categories} onChange={handleCategoriesChange}>
+                                                    <select className="form-control textBox" id="category" value={donations?.donationPost?.pickup_location || categories} onChange={handleCategoriesChange}>
                                                         <option>Cooked Food</option>
                                                         <option>Readymade Food</option>
                                                         <option>UnCooked Food</option>
@@ -333,7 +420,7 @@ export default function AddNewDonation() {
                                                 </div>
                                                 <div className="my-3">
                                                     <label htmlFor="foodName" className="form-label mt-2 ">Location <span className="text-danger">*</span></label>
-                                                    <input type="text" className="form-control textBox" id="foodName" onChange={(e) => setLocation(e.target.value)} required="required" />
+                                                    <input type="text" className="form-control textBox" id="foodName" onChange={(e) => setLocation(e.target.value)} required="required" value={location} />
                                                 </div>
                                             </div>
                                         </div>

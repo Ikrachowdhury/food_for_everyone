@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 10, 2024 at 11:17 PM
+-- Generation Time: Aug 19, 2024 at 08:30 PM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 8.2.12
 
@@ -70,10 +70,19 @@ CREATE TABLE `donation_posts` (
 --
 
 INSERT INTO `donation_posts` (`donation_id`, `user_id`, `post_name`, `post_description`, `serves`, `expiredate`, `last_receive_date`, `receive_time`, `donee_type`, `pickup_location`, `categories`) VALUES
-(36, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
-(37, 8, 'Double Deckar Burger ', 'Burger is a yummy food', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
-(38, 8, 'Burger Delight', 'Burger is very tasty', 2, '12/08/2024', '20/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
-(39, 7, 'Pizza Yummy', 'Pizza is an Italian dish typically consisting of a flat base of leavened wheat-based dough topped with tomato, cheese, and other ingredients, baked at a high temperature, traditionally in a wood-fired oven.', 5, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Maijdee', 'Cooked Food');
+(36, 8, 'Chicken Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 1, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(40, 8, 'Biriyani', 'Biriyani biriyani', 7, '20/08/2025', '20/08/2023', '12:00 AM', 'Organization', 'Bangladesh', 'Cooked'),
+(41, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(42, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(43, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(44, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(45, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(46, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(47, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(48, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(49, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(50, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food'),
+(51, 8, 'Burger', 'Burger is a yummy food. A hamburger, or simply a burger, is a dish consisting of fillings—usually a patty of ground meat, typically beef—placed inside a sliced bun or bread roll.', 2, '20/08/2024', '17/08/2024', '10:00 AM', 'Organization', 'Agrabad', 'Cooked Food');
 
 -- --------------------------------------------------------
 
@@ -153,6 +162,28 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `organization_information`
+--
+
+CREATE TABLE `organization_information` (
+  `org_id` int(255) NOT NULL,
+  `org_name` varchar(1000) NOT NULL,
+  `office_time` varchar(1000) NOT NULL,
+  `org_about` varchar(1000) NOT NULL,
+  `admin_approval` varchar(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `organization_information`
+--
+
+INSERT INTO `organization_information` (`org_id`, `org_name`, `office_time`, `org_about`, `admin_approval`) VALUES
+(13, 'Food Supporter', '8:00AM - 9:00PM', 'Our company help the needy people. We Donate the food so that poor people can eat those food.', 'accepted'),
+(14, 'gr', 'as', 'etr', 'accepted');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `password_reset_tokens`
 --
 
@@ -198,25 +229,40 @@ CREATE TABLE `post_images` (
 --
 
 INSERT INTO `post_images` (`image_id`, `donation_id`, `image_path`) VALUES
-(1, 1, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(2, 2, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(3, 2, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(4, 3, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(5, 3, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(6, 3, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(8, 4, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(9, 4, 'https://images.unsplash.com/photo-1579751626657-72bc17010498?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
-(30, 35, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722528973/yxzupe6fsvpi1zvr5lcr.jpg'),
-(31, 36, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
-(32, 36, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/eztefvpgq4xzm6oqdu5t.jpg'),
-(33, 36, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/f3e7jxqchij9nzgdycr6.jpg'),
-(34, 36, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/lopgcezcvyxoa47sbzad.jpg'),
-(35, 38, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529738/vbly45jmws6mkogvlbgf.jpg'),
-(36, 38, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529738/wpupgtejrb3lph0fqhch.jpg'),
-(37, 38, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529738/aqlcnhucmorbgixmzk2u.jpg'),
-(38, 38, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529738/nibarw200vuw5pxeeujw.jpg'),
-(39, 39, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529738/wpupgtejrb3lph0fqhch.jpg'),
-(40, 37, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529738/wpupgtejrb3lph0fqhch.jpg');
+(41, 40, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
+(42, 40, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/eztefvpgq4xzm6oqdu5t.jpg'),
+(43, 40, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
+(44, 40, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/eztefvpgq4xzm6oqdu5t.jpg'),
+(45, 43, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
+(46, 43, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/eztefvpgq4xzm6oqdu5t.jpg'),
+(47, 43, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/f3e7jxqchij9nzgdycr6.jpg'),
+(48, 43, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/lopgcezcvyxoa47sbzad.jpg'),
+(89, 50, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
+(90, 50, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/f3e7jxqchij9nzgdycr6.jpg'),
+(91, 51, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
+(92, 51, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529553/eztefvpgq4xzm6oqdu5t.jpg'),
+(93, 51, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/f3e7jxqchij9nzgdycr6.jpg'),
+(96, 36, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/qx8yxlt4uwfkdfp3jaby.jpg'),
+(97, 36, 'http://res.cloudinary.com/de0xjzms6/image/upload/v1722529552/f3e7jxqchij9nzgdycr6.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `rating`
+--
+
+CREATE TABLE `rating` (
+  `rating_id` int(255) NOT NULL,
+  `req_id` int(255) NOT NULL,
+  `rating` int(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `rating`
+--
+
+INSERT INTO `rating` (`rating_id`, `req_id`, `rating`) VALUES
+(14, 12, 2);
 
 -- --------------------------------------------------------
 
@@ -239,9 +285,8 @@ CREATE TABLE `requestdonation` (
 --
 
 INSERT INTO `requestdonation` (`req_id`, `donation_id`, `user_id`, `location`, `accept_status`, `run_status`, `delivery`) VALUES
-(6, 36, 9, 'Sonapur', 'Pending', 'Pending', 'Rider'),
-(7, 37, 9, 'Maijdee', 'Pending', 'Pending', 'Pickup'),
-(9, 36, 6, 'Abc', 'Pending', 'Pending', 'Rider');
+(6, 36, 9, 'Sonapur', 'accepted', 'Pending', 'Rider'),
+(12, 40, 9, 'Bangladesh', 'delivered', 'delivered', 'Delivery');
 
 -- --------------------------------------------------------
 
@@ -263,6 +308,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
+('6u2nWNgkiUsR1fVl1w5skl8lvWB3IHgpz2x8bhZ7', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMzNjQmJIYUd5MG1vT2hRS1haeHRHTUhadHRXenhZZEVRcFFQRklyQiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NzQ6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC92ZXJpZnktbWFpbC9PRHBIWWZ0b3M4ODFpSUh6UU1rRUpwYWFQZnpyQzVUMXlCOHFhMWp1Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1723929138),
 ('9E23tqlRWnpyQm0N5eLZogyg28tT64QQZtfMQPwf', NULL, '127.0.0.1', 'PostmanRuntime/7.40.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoieThUVTRPelEzdWJkZjhhYkNBUUlYd3dmM3JtOG93Vk1xUnRidmVTMiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1722697585),
 ('lJj1LEwU29VSFwgPAGcBJNXlcHmA2nRdpKyVPNwH', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRzRVelVndE1TTHpzdmp4aGxjRWZ1M2FSdjV2RG9UaFo0ajd3VjJPWiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NzQ6Imh0dHA6Ly9sb2NhbGhvc3Q6ODAwMC92ZXJpZnktbWFpbC9ScVozOWdSalBoQ3NjYUFsbk03S2cwZEVTSUJkU01oVEF5SHo1bTZSIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1718987272),
 ('moKwjhqxtvsTPUhnZ9ALdOHdble5BBdACpRopiNH', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiaWFPSzdscjZZVU54czZsTXVQeWdCMjdhYXhPNWpYZlJscWlFVm9sdSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6NzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC92ZXJpZnktbWFpbC9wNTM0YjMzYXBYQzNIZmxGMUJ1TFE1T094SWdjamJLU1FvbW9qenBFIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1718282508),
@@ -279,7 +325,7 @@ CREATE TABLE `users` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` int(11) NOT NULL,
+  `phone` varchar(11) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_verified` int(11) NOT NULL DEFAULT 0,
   `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -292,11 +338,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `address`, `is_verified`, `remember_token`, `email_verified_at`, `user_type`) VALUES
-(1, 'Ikra Chowdhury', 'ikra@gmail.com', '$2y$12$v.nI7BfI57gIShiG8WKojOprX16xpDSsA9KjbAT2rsGOolBXhdBwe', 1234567890, 'Mogotuli', 1, '', '', '/donerRegistration'),
-(2, 'Arman', 'aarmanur2514@student.nstu.edu.bd', '$2y$12$TpNISDnV/tIYkkqkAqPCl.TQuXBN70pNDOC0c.b3rb41yMAl0azrW', 1875560507, NULL, 1, '', '2024-06-13 12:41:48', 'Admin'),
-(7, 'Armanur Rashid', 'armanurr2514@student.nstu.edu.bd', '$2y$12$gkUs4L9ZjN4sJTQ/92N5TeuGY3WgtXQBtFFIzWGSiYvW9Ip8UvxFW', 1875560507, NULL, 1, '', '2024-06-21 16:27:52', 'Rider'),
-(8, 'Arman', 'armanur@student.nstu.edu.bd', '$2y$12$.bVTVbgMRq.1I29o0l7i0e.gbMWPd.7mh1gsQGh2VNF4Xrgu1HJA6', 1634858752, NULL, 1, '', '2024-06-22 18:44:23', 'Donor'),
-(9, 'Arman', 'armanur2514@student.nstu.edu.bd', '$2y$12$Flb/Plqf/NnepQC52cYscOW2uykKyM0WDSn2LRTWXu75AGow0jFEy', 1634858752, 'Agrabad', 1, '', '2024-06-22 18:53:10', 'Donee');
+(1, 'Ikra Chowdhury', 'ikra@gmail.com', '$2y$12$v.nI7BfI57gIShiG8WKojOprX16xpDSsA9KjbAT2rsGOolBXhdBwe', '1234567890', 'Mogotuli', 1, '', '', '/donerRegistration'),
+(2, 'Arman', 'aarmanur2514@student.nstu.edu.bd', '$2y$12$TpNISDnV/tIYkkqkAqPCl.TQuXBN70pNDOC0c.b3rb41yMAl0azrW', '1875560507', NULL, 1, '', '2024-06-13 12:41:48', 'Admin'),
+(7, 'Armanur Rashid', 'armanurr2514@student.nstu.edu.bd', '$2y$12$gkUs4L9ZjN4sJTQ/92N5TeuGY3WgtXQBtFFIzWGSiYvW9Ip8UvxFW', '1875560507', NULL, 1, '', '2024-06-21 16:27:52', 'rider'),
+(8, 'Arman', 'armanur@student.nstu.edu.bd', '$2y$12$.bVTVbgMRq.1I29o0l7i0e.gbMWPd.7mh1gsQGh2VNF4Xrgu1HJA6', '1634858752', 'sonapur', 1, '', '2024-06-22 18:44:23', 'donor'),
+(9, 'Arman', 'armanur2514@student.nstu.edu.bd', '$2y$12$Flb/Plqf/NnepQC52cYscOW2uykKyM0WDSn2LRTWXu75AGow0jFEy', '1634858752', 'Agrabad', 1, '', '2024-06-22 18:53:10', 'donee'),
+(13, 'Mr Arman', 'nowshadparvin@gmail.com', '$2y$12$7QvNcYITC03fia30DlRL5uo34ezMvfaoPtMVyqD.W5OXgnFJHrGuy', '01875560507', 'Maijdee, Noakhali', 0, 'O2qCUGKEN5k5m1wb03h2WCYlRNp0c6okUTwSSGdr', NULL, 'donee'),
+(14, 'Rashid', 'aranur2514@student.nstu.edu.bd', '123456', '12345678732', 'asa', 1, '', '2024-08-17 21:12:18', 'donee');
 
 --
 -- Indexes for dumped tables
@@ -347,6 +395,12 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `organization_information`
+--
+ALTER TABLE `organization_information`
+  ADD PRIMARY KEY (`org_id`);
+
+--
 -- Indexes for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -365,6 +419,12 @@ ALTER TABLE `personal_access_tokens`
 --
 ALTER TABLE `post_images`
   ADD PRIMARY KEY (`image_id`);
+
+--
+-- Indexes for table `rating`
+--
+ALTER TABLE `rating`
+  ADD PRIMARY KEY (`rating_id`);
 
 --
 -- Indexes for table `requestdonation`
@@ -395,7 +455,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `donation_posts`
 --
 ALTER TABLE `donation_posts`
-  MODIFY `donation_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `donation_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -425,19 +485,25 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `post_images`
 --
 ALTER TABLE `post_images`
-  MODIFY `image_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `image_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
+
+--
+-- AUTO_INCREMENT for table `rating`
+--
+ALTER TABLE `rating`
+  MODIFY `rating_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `requestdonation`
 --
 ALTER TABLE `requestdonation`
-  MODIFY `req_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `req_id` int(255) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

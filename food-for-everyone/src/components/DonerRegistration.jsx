@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import '../assets/css/OrganizationalRegistration.css';
-// import image from '../images/images1.jpg';
 
 export const DonerRegistration = () => {
     const [name, setName] = useState("");
@@ -65,45 +64,46 @@ export const DonerRegistration = () => {
 
     return (
         <>
-            {/* <div className="landing-hero">
-                <img src={image} alt="" className="home-hero-image-copy" />
-                <div className="_1080p-wrapper">
-                    <div className="homepage-main-container">
-                        <h1 className="home-hero-header">Food for Everyone is reducing food loss and waste through surplus food redistribution</h1>
-                    </div>
-                </div>
-            </div> */}
             <div className="container my-5">
-                <div className="mx-5 px-5 organizationForm">
-                    <h2 className="text-center my-5 heading">Doner Registration Form</h2>
-                    <form onSubmit={signUp}>
-                        <div className="mb-3">
-                            <label htmlFor="contactName" className="form-label mt-2 OrganizationLabel">Full Name <span className="text-danger">*</span></label>
-                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="form-control registrationInput" id="contactName" required="required" />
+                <div className="registration-content mt-5">
+                    <div className="row mt-3">
+                        <div>
+                            <div className='px-4 py-2 columnBackground'>
+                                <h2 className='text-center my-4 fw-bold'>Person Registration Form</h2>
+                                <div className='mt-5'>
+                                    <form onSubmit={signUp}>
+                                        <h5 className='mb-0  text-muted'>Account Information</h5>
+                                        <div className="my-3">
+                                            <label htmlFor="foodName" className="form-label mt-2 ">Full Name <span className="text-danger">*</span></label>
+                                            <input type="text" className="form-control textBox" id="foodName" value={name} onChange={(e) => setName(e.target.value)} required="required" />
+                                        </div>
+                                        <div className="my-3">
+                                            <label htmlFor="contactEmail" className="form-label mt-2 ">Email Address<span className="text-danger">*</span></label>
+                                            <input type="email" className="form-control textBox" id="contactEmail" value={email} onChange={(e) => setEmail(e.target.value)} required="required" />
+                                        </div>
+                                        <div className="my-3">
+                                            <label htmlFor="contactNumber" className="form-label mt-2 ">Mobile<span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control textBox" id="contactNumber" value={phone} onChange={(e) => setPhone(e.target.value)} required="required" />
+                                        </div>
+                                        <div className="my-3">
+                                            <label htmlFor="password" className="form-label mt-2 ">Password<span className="text-danger">*</span></label>
+                                            <input type="password" className="form-control textBox" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required="required" />
+                                        </div>
+                                        <div className="my-3">
+                                            <label htmlFor="confirmPassword" className="form-label mt-2 ">Confirm Password<span className="text-danger">*</span></label>
+                                            <input type="password" className="form-control textBox" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required="required" />
+                                        </div>
+                                        <div className="d-flex justify-content-around mt-5 my-4">
+                                            <input type="submit" className="btn btn-sm" value="Submit" />
+                                        </div>
+                                    </form>
+                                    <div>
+                                        <p className="registerParagraph mt-4 mb-4 text-dark">Already have an account? <a href={`/login?value=${value}`} className="signupLink">Login</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div className="mb-3">
-                            <label htmlFor="contactEmail" className="form-label mt-2 OrganizationLabel">Email address <span className="text-danger">*</span></label>
-                            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control registrationInput" id="contactEmail" required="required" />
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="contactNumber" className="form-label mt-2 OrganizationLabel">Mobile Number <span className="text-danger">*</span></label>
-                            <input type="number" value={phone} onChange={(e) => setPhone(e.target.value)} className="form-control registrationInput" id="contactNumber" required="required" />
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="password" className="form-label OrganizationLabel">Password <span className="text-danger">*</span></label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="form-control registrationInput" id="password" required="required" />
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="confirmPassword" className="form-label OrganizationLabel">Confirm Password <span className="text-danger">*</span></label>
-                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="form-control registrationInput" id="confirmPassword" required="required" />
-                        </div>
-                        <div className="d-flex justify-content-around mt-5 my-4">
-                            <input type="submit" className="btn btn-sm" value="Submit" />
-                        </div>
-                    </form>
-                    <div>
-                        <p className="registerParagraph mt-4 mb-4 text-dark">Already have an account? <a href={`/login?value=${value}`} className="signupLink">Login</a>
-                        </p>
                     </div>
                 </div>
             </div>

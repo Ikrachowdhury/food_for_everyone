@@ -3,24 +3,26 @@
         "description": "Learn about reducing food waste and how to play your",
         "image": "../src/images/img1.png",
         "link": "/login",
-        "value": "/donerRegistration"
+        "value": "donor"
     },
     {
         "title": "Get Food",
         "description": "Learn about reducing food waste and how to play your",
         "image": "../src/images/img2.png",
-        "link": "/GetFoodOption"
-    },
-    {
-        "title": "Get Information",
-        "description": "Learn about reducing food waste and how to play your",
-        "image": "../src/images/img3.png",
-        "link": ""
+        "link": "/login",
+        "value": "donee"
     },
     {
         "title": "Give Time",
         "description": "Learn about reducing food waste and how to play your",
         "image": "../src/images/img4.png",
+        "link": "/login",
+        "value": "rider"
+    },
+    {
+        "title": "Get Information",
+        "description": "Learn about reducing food waste and how to play your",
+        "image": "../src/images/img3.png",
         "link": ""
     },
     {
@@ -33,6 +35,7 @@
         "title": "Get to Know us",
         "description": "Learn about reducing food waste and how to play your",
         "image": "../src/images/img6.png",
-        "link": ""
+        "link": "/login",
+        "value": "Admin"
     }
 ]

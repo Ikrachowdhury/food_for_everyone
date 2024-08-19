@@ -5,11 +5,35 @@ import impact5 from "../images/impact5.png"
 import impact6 from "../images/impact6.png"
 import jsonData from '../assets/json files/cardData.json';
 import impactData from "../assets/json files/impactData.json";
+import { useNavigate } from 'react-router-dom';
+
 const Home = () => {
+    const user_type = localStorage.getItem('user_type');
+    const navigate = useNavigate();
+    const handleNavigation = (event, card) => {
+        if (user_type && user_type === card.value) {
+            event.preventDefault(); 
+            if (user_type === 'donor') {
+                navigate("/dashboard");
+            } else if (user_type === 'donee') {
+                navigate("/receiverDashboard");
+            } else if (user_type === 'rider') {
+                navigate("/riderDashboard");
+            } else if (user_type === 'Admin') {
+                navigate("/doneeList");
+            }
+        } else {
+            window.location.href = `${card.link}?value=${card.value}`;
+        }
+    };
     const renderCards = () => {
         return jsonData.map((card, index) => (
             <div className="col text-center px-4 py-5" key={index}>
-                <a href={`${card.link}?value=${card.value}`} className="cardLink navigation-grid-element">
+                <a 
+                href={`${card.link}?value=${card.value}`} 
+                className="cardLink navigation-grid-element"
+                onClick={(e) => handleNavigation(e, card)} 
+            >
                     <div className="card cardShadow" >
                         <div className="thumbnail-image-wrapper">
                             <img src={card.image} className="card-img-top thumbnail-image" alt="..." />

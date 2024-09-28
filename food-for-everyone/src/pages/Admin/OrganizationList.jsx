@@ -18,6 +18,8 @@ import { useEffect, useState } from 'react';
 export default function OrganizationList() {
     const [queries, setQueries] = useState("");
     const [error, setError] = useState("");
+    const [toast, setToast] = useState("");
+    const [message, setMessage] = useState("");
     const [organizationData, setorganizationData] = useState("")
     console.log(error)
     console.log(organizationData)
@@ -73,15 +75,17 @@ export default function OrganizationList() {
                 let emailResultData = await emailResult.json();
                 console.warn("email result", emailResultData);
 
-                if (emailResult.ok) {
-                    alert("Verification email sent successfully");
-                } else {
-                    alert("Error sending verification email", emailResultData);
-                }
+                // if (emailResult.ok) {
+                //     alert("Verification email sent successfully");
+                // } else {
+                //     alert("Error sending verification email", emailResultData);
+                // }
             }
             if (result.success) {
-                alert('Organization Request accepted successfully!');
-                window.location.reload(); // Reload the page
+                setMessage("Organization Request accepted Successfully");
+                setToast(true);
+                // alert('Organization Request accepted successfully!');
+                // window.location.reload(); 
 
             } else {
                 alert('Error: ' + result.message);
@@ -109,8 +113,10 @@ export default function OrganizationList() {
             let result = await response.json();
             console.log("Result:", result);
             if (result.success) {
-                alert('Organization Request Rejected successfully!');
-                window.location.reload(); // Reload the page
+                setMessage("Organization Request Rejected Successfully");
+                setToast(true);
+                // alert('Organization Request Rejected successfully!');
+                // window.location.reload(); 
             } else {
                 alert('Error: ' + result.message);
             }
@@ -119,6 +125,11 @@ export default function OrganizationList() {
             alert('An error occurred while accepting the donation. ' + error.message);
         }
     };
+
+    const closeToast = () => {
+        setToast(false)
+        window.location.reload();
+    }
 
     return (
         <div>
@@ -185,12 +196,24 @@ export default function OrganizationList() {
                                     </tbody>
                                 </table>
                             </section>
+
                         ) : (
                             <div className="centered-content">
                                 <div className="text">
                                     <span>Ooops...</span>
                                 </div>
                                 <div className="MainMessage">No Request</div>
+                            </div>
+                        )}
+                        {toast && (
+                            <div className="toast show bg-light" role="alert" aria-live="assertive" aria-atomic="true" style={{
+                                position: 'fixed', top: '20px', right: '20px', zIndex: 9999, left: '50%', minWidth: '500px',
+                                transform: 'translateX(-50%)',
+                            }}>
+                                <div className="toast-header">
+                                    <strong className="me-auto text-success">{message}</strong>
+                                    <button type="button" className="btn-close" onClick={closeToast} aria-label="Close"></button>
+                                </div>
                             </div>
                         )}
                     </main>

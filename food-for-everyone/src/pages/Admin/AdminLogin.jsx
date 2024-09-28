@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import '../assets/css/Login.css';
+import '../../assets/css/Login.css';
 import { useState, useEffect } from 'react';
-import HomeNavbar from './HomeNavbar';
-export const Login = () => {
+import HomeNavbar from '../../components/HomeNavbar';
+
+export const AdminLogin = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState('');
@@ -10,8 +11,6 @@ export const Login = () => {
     const [forgetEmail, setForgetEmail] = useState("");
     const [showPasswordModal, setShowPasswordModal] = useState(true);
     const navigate = useNavigate();
-    const urlParams = new URLSearchParams(window.location.search);
-    const value = urlParams.get('value');
 
     const okButton = () => {
         navigate("/")
@@ -40,20 +39,10 @@ export const Login = () => {
             localStorage.setItem("user_id", result.user_id);
             localStorage.setItem("user-info", JSON.stringify(result));
             localStorage.setItem("user_type", result.user_type);
-
-            if (result.user_type === value || result.user_type === 'organization') {
-                if (result.user_type === 'donor') {
-                    navigate("/dashboard");
-                } else if (result.user_type === 'donee' || result.user_type === 'organization') {
-                    navigate("/receiverDashboard");
-                } else if (result.user_type === 'rider') {
-                    navigate("/riderDashboard");
-                }else {
-                    setMessage("User name or Password is incorrect");
-                    setShowToast(true);
-                }
+            if (result.user_type === 'Admin') {
+                navigate("/doneeList");
             } else {
-                setMessage(`Only ${value} can login`);
+                setMessage("User name or Password is incorrect");
                 setShowToast(true);
             }
         }
@@ -135,7 +124,7 @@ export const Login = () => {
                                 <input type="submit" className="btn btn-sm" value="Login" />
                             </div>
 
-                            <div>
+                            {/* <div>
                                 {value === 'donor' ? (
                                     <p className="registerParagraph mt-4 mb-4">
                                         Not a member? <a href={`/individualRegistration?value=${value}`} className="signupLink" style={{ textDecoration: "none" }}>Register</a>
@@ -151,7 +140,7 @@ export const Login = () => {
                                 ) : (
                                     ""
                                 )}
-                            </div>
+                            </div> */}
                         </div>
                         {showPasswordModal && (
                             <div className="modal fade " id="passwordBackdrops" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">

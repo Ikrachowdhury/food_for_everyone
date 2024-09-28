@@ -190,3 +190,28 @@ input:focus {
     border: none;
     font-weight: bold;
 }
+.chat-panel {
+    flex: 1; /* Takes up available space */
+    overflow-y: auto; /* Allows vertical scrolling */
+    padding: 15px; /* Optional padding */
+}
+
+.chat-box-tray {
+    display: flex; /* Makes it a flex container */
+    align-items: center; /* Centers items vertically */
+    padding: 10px; /* Optional padding */
+    border-top: 1px solid #ddd; /* Optional border for separation */
+    background-color: #fff; /* Optional background color */
+}
+
+.messageInput {
+    flex: 1; /* Input takes remaining space */
+    padding: 10px; /* Padding for input */
+    border: 1px solid #ddd; /* Border for input */
+    border-radius: 4px; /* Rounded corners for input */
+}
+
+.btn {
+    margin-left: 10px; /* Space between input and button */
+    padding: 10px 15px; /* Padding for button */
+}

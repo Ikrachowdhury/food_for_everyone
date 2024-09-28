@@ -44,7 +44,7 @@
 .inputBox input {
     position: relative;
     width: 100%;
-    padding: 20px 10px 10px;
+    padding: 10px 10px 10px;
     background: transparent;
     border: none;
     outline: none;
@@ -58,7 +58,7 @@
 .inputBox span {
     position: absolute;
     left: 0;
-    padding: 20px 0px 10px;
+    padding: 12px 0px 10px;
     font-size: 1em;
     color: #959292;
     pointer-events: none;
@@ -72,6 +72,7 @@
     transform: translateX(0px) translateY(-34px);
     font-size: 0.75em;
     font-weight: bold;
+    /* margin-top: -7px; */
 }
 
 .inputBox i {

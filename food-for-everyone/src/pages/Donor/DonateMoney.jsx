@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Sidebar from '../../components/Sidebar';
 import image from "../../images/Help.png";
@@ -6,8 +6,11 @@ import bkash from "../../images/bkash.png";
 import "../../assets/css/DonateMoney.css";
 import { FaRegCircle } from 'react-icons/fa';
 import { BsBank, BsCreditCard2FrontFill } from 'react-icons/bs';
-
+import HomeNavbar from '../../components/HomeNavbar';
+// const value = localStorage.getItem('user_type');
+// console.log(value);
 export default function DonateMoney() {
+    const [value, setValue] = useState(null);
     const [active, setActive] = useState('one-time');
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [paymentFormSubmitted, setPaymentFormSubmitted] = useState(false);
@@ -15,7 +18,10 @@ export default function DonateMoney() {
     const [amount, setAmount] = useState('');
     const [customAmount, setCustomAmount] = useState('');
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
-
+    useEffect(() => {
+        const userType = localStorage.getItem('user_type');
+        setValue(userType);
+    }, []);
     const handleNextClick = () => {
         if (!formSubmitted) {
             console.log(`${active} ${amount || customAmount}`);
@@ -45,10 +51,11 @@ export default function DonateMoney() {
 
     return (
         <div>
-            <Navbar />
+            {value?<Navbar />:<HomeNavbar/>}
             <div className="homePage d-flex">
-                <Sidebar />
-                <div className="main-content  dashboard-content mt-5">
+            {value?<Sidebar />:null}
+                
+                <div className="main-content  dashboard-content mt-5"  style={value ?  { marginLeft: "78px" } : {} }>
                     <section className="imageSection">
                         <div className="landing-hero">
                             <img src={image} alt="" className="dashboard-image" />

@@ -10,14 +10,36 @@ import { RiUserReceived2Fill } from 'react-icons/ri';
 export default function ReceiverDashboard() {
     const [modelData, setModalData] = useState(null);
     const [delivery, setDelivery] = useState('Pickup');
-    const [location, setUserLocation] = useState('');
     const [donation_id, setSelectedDonationId] = useState(null);
-    const [donationIds, setDonationIds] = useState([]);
     const [donationData, setDonationData] = useState([]);
     const [error, setError] = useState(null);
-    const [isExpanded, setIsExpanded] = useState(false);
     const user_id = localStorage.getItem('user_id');
+    const [userlat, setUserlat] = useState(0);
+    const [userlon, setUserlon] = useState(0);
+    const [expandedDonationId, setExpandedDonationId] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [showRequestModal, setRequestModal] = useState(true);
+
     console.log(error)
+
+    useEffect(() => {
+        if (modelData) {
+            const modalElement = document.getElementById('detailsModal');
+            if (modalElement) {
+                const modal = new window.bootstrap.Modal(modalElement);
+                modal.show();
+            }
+        }
+    }, [modelData]);
+
+    const okButton = () => {
+        window.location.reload();
+    }
+
+    useEffect(() => {
+        console.log('User Latitude:', userlat);
+        console.log('User Longitude:', userlon);
+    }, [userlat, userlon]);
 
     const handleDetailsModal = (donation) => {
         setModalData(donation);
@@ -26,23 +48,64 @@ export default function ReceiverDashboard() {
     const handleRequestClick = (donationId) => {
         setSelectedDonationId(donationId);
     };
-    // console.log('Selected Donation ID:', donation_id);
     const handleDeliveryChange = (e) => {
         setDelivery(e.target.value);
     };
 
-    const handleUserLocationChange = (e) => {
-        setUserLocation(e.target.value);
+    const toggleExpand = (donationId) => {
+        setExpandedDonationId(prevId => (prevId === donationId ? null : donationId));
     };
 
-    const toggleExpand = () => {
-        setIsExpanded(!isExpanded);
-    };
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+        const toRadians = (degree) => (degree * Math.PI) / 180;
+
+        const R = 6371;
+        const dLat = toRadians(lat2 - lat1);
+        const dLon = toRadians(lon2 - lon1);
+
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        const distance = R * c;
+        return distance;
+    }
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchProfileData = async () => {
             try {
-                const responseIds = await fetch(`http://localhost:8000/api/donee-dashboard`, {
+                const user_id = localStorage.getItem('user_id');
+                const response = await fetch(`http://localhost:8000/api/profile/${user_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const result = await response.json();
+                setUserlat(result.user.address_lat)
+                setUserlon(result.user.address_lon)
+                console.log(userlon)
+                console.log(userlat)
+
+            } catch (error) {
+                setError(error.message);
+            }
+        };
+        fetchProfileData();
+    }, []);
+
+    useEffect(() => {
+        const fetchDonationData = async () => {
+            try {
+                const responseIds = await fetch(`http://localhost:8000/api/donee-dashboard/${user_id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -55,14 +118,9 @@ export default function ReceiverDashboard() {
                 }
 
                 const donationIdsData = await responseIds.json();
-                // console.log(donationIdsData.total_donation_ids);
-                setDonationIds(donationIdsData.donation_ids_with_user_ids);
-                console.log(donationIds)
 
                 const donationPromises = donationIdsData.donation_ids_with_user_ids.map(async (donation) => {
-                    // console.log(donation.donation_id)
                     const donationId = donation.donation_id;
-                    // console.log(donationId)
                     const response = await fetch(`http://localhost:8000/api/dashboardDonations/${donationId}`, {
                         method: 'GET',
                         headers: {
@@ -70,39 +128,35 @@ export default function ReceiverDashboard() {
                             'Accept': 'application/json',
                         },
                     });
-                    // console.log(response)
                     if (!response.ok) {
                         throw new Error(`Failed to fetch donation ${donationId}`);
                     }
                     const result = await response.json();
-                    console.log(result);
-
                     return result;
-                    // return response.json();
                 });
 
                 const donationResults = await Promise.all(donationPromises);
                 setDonationData(donationResults);
-                // console.log(donationData)
+                setIsLoading(false);
             } catch (error) {
+                setIsLoading(false);
                 setError(error.message);
             }
         };
 
-        fetchData();
+        fetchDonationData();
     }, []);
+
 
     async function donationRequest(event) {
         event.preventDefault();
         const formData = {
             delivery: delivery,
-            location: location,
             donation_id: donation_id,
             user_id: parseInt(user_id, 10),
             accept_status: 'Pending',
             run_status: 'Pending'
         };
-        console.log('Form Data:', formData);
         try {
             let response = await fetch("http://localhost:8000/api/requestdonation", {
                 method: 'POST',
@@ -112,8 +166,12 @@ export default function ReceiverDashboard() {
                 },
                 body: JSON.stringify(formData)
             });
-
-            if (!response.ok) {
+            if (response.status === 200) {
+                const modalElement = new window.bootstrap.Modal(document.getElementById('sentRequest'));
+                modalElement.show();
+                setRequestModal(false);
+            }
+            else {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             let result = await response.json();
@@ -123,6 +181,15 @@ export default function ReceiverDashboard() {
         }
     }
 
+    const filteredDonations = donationData.filter((donation) => {
+        const donationLat = donation.donationPost.location_lat;
+        const donationLon = donation.donationPost.location_lon;
+
+        const distance = haversineDistance(userlat, userlon, donationLat, donationLon);
+
+        return distance < 2; 
+    });
+
     return (
         <div>
             <Navbar />
@@ -130,91 +197,110 @@ export default function ReceiverDashboard() {
                 <Sidebar />
                 <div className="main-content mt-5 dashboardMain ">
                     <div className="row mt-5 px-5">
-                        {donationData.length > 0 ? (
-                            donationData.map((donation, index) => (
-                                <div className="col-6 py-3" key={index}>
-                                    <div className="card shadow cardBorder">
-                                        <div className="card-body">
-                                            <div className="row">
-                                                <div className="col-4 d-flex align-items-center">
-                                                    <div className=''>
-                                                        <img src={donation.imagePaths[0]} className="dashboardImage img-fluid" alt="image" />
-                                                    </div>
-                                                </div>
-                                                <div className="col-8 mt-1">
-                                                    <div className='d-flex flex-column'>
-                                                        <div>
-                                                            <h6 >{donation.donationPost.post_name}</h6>
-                                                            <h6 className='text-muted'>
-                                                                Validity: {donation.donationPost.expiredate}
-                                                            </h6>
-                                                            <p className='mt-2'>
-                                                                {isExpanded || donation.donationPost.post_description.length <= 100
-                                                                    ? donation.donationPost.post_description
-                                                                    : `${donation.donationPost.post_description.substring(0, 100)}...`}
-                                                                {donation.donationPost.post_description.length > 100 && (
-                                                                    <span
-                                                                        className='text-success fw-bold'
-                                                                        onClick={toggleExpand}
-                                                                        style={{ cursor: 'pointer' }}
-                                                                    >
-                                                                        {isExpanded ? ' Read Less' : ' Read More'}
-                                                                    </span>
-                                                                )}
-                                                            </p>
+                        {isLoading ? (
+                            <div className="centered-content">
+                                <div className="text">Loading...</div>
+                            </div>
+                        ) :
+                            filteredDonations.length > 0 ? (
+                                filteredDonations.map((donation, index) => (
+                                    <div className="col-6 py-3" key={index}>
+                                        <div className="card shadow cardBorder">
+                                            <div className="card-body">
+                                                <div className="row">
+                                                    <div className="col-4 d-flex align-items-center">
+                                                        <div >
+                                                            <img src={donation.imagePaths[0]} className="img-fluid" alt="image" style={{ width: "300px", height: "170px" }} />
                                                         </div>
                                                     </div>
-                                                    <div className='mt-3'>
-                                                        <button className='btn me-2' data-bs-toggle="modal" data-bs-target="#staticBackdrop" style={{ backgroundColor: "#A0F0A8" }} onClick={() => handleRequestClick(donation.donationPost.donation_id)}>
-                                                            Request
-                                                        </button>
-                                                        <button className='btn me-2 bg-secondary text-white' data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(donation)}>
-                                                            Details
-                                                        </button>
-                                                    </div>
-                                                    <div className="modal fade " id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                        <div className="modal-dialog modal-lg modal-dialog-centered ">
-                                                            <div className="modal-content " style={{ backgroundColor: "#f9f9f9" }}>
-                                                                <div className="modal-header d-flex align-items-center justify-content-between">
-                                                                    <h4 className="modal-title fs-5 " id="staticBackdropLabel">Food Request Form</h4>
-                                                                    <button type="button" className="close text-danger" data-bs-dismiss="modal" aria-label="Close">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div className="modal-body">
-                                                                    <div className="mb-3 mx-3">
-                                                                        <label htmlFor="foodName" className="form-label mt-2 formLabel">Location <span className="text-danger">*</span></label>
-                                                                        <input type="text" className="form-control formInput" id="userLocation" required="required" style={{ backgroundColor: "#EEEEEE" }} onChange={handleUserLocationChange} />
+                                                    <div className="col-8 mt-1">
+                                                        <div className='d-flex flex-column'>
+                                                            <div>
+                                                                <h6 >{donation.donationPost.post_name}</h6>
+                                                                <h6 className='text-muted'>
+                                                                    Validity: {donation.donationPost.expiredate}
+                                                                </h6>
+                                                                <p className='mt-2'>
+                                                                    {expandedDonationId === donation.donationPost.donation_id || donation.donationPost.post_description.length <= 100
+                                                                        ? donation.donationPost.post_description
+                                                                        : `${donation.donationPost.post_description.substring(0, 100)}...`}
+                                                                    {donation.donationPost.post_description.length > 100 && (
+                                                                        <span
+                                                                            className='text-success fw-bold'
+                                                                            onClick={() => toggleExpand(donation.donationPost.donation_id)}
+                                                                            style={{ cursor: 'pointer' }}
+                                                                        >
+                                                                            {expandedDonationId === donation.donationPost.donation_id ? ' Read Less' : ' Read More'}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className='mt-3'>
+                                                            <button className='btn me-2' data-bs-toggle="modal" data-bs-target="#staticBackdrop" style={{ backgroundColor: "#A0F0A8" }} onClick={() => handleRequestClick(donation.donationPost.donation_id)}>
+                                                                Request
+                                                            </button>
+                                                            <button className='btn me-2 bg-secondary text-white' data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(donation)}>
+                                                                Details
+                                                            </button>
+                                                        </div>
+                                                        {showRequestModal && (
+                                                            <div className="modal fade " id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                                <div className="modal-dialog modal-lg modal-dialog-centered ">
+                                                                    <div className="modal-content " style={{ backgroundColor: "#f9f9f9" }}>
+                                                                        <div className="modal-header d-flex align-items-center justify-content-between">
+                                                                            <h4 className="modal-title fs-5 " id="staticBackdropLabel">Food Request Form</h4>
+                                                                            <button type="button" className="close text-danger" data-bs-dismiss="modal" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <div className="modal-body">
+                                                                            <div className="mb-3 mx-3">
+                                                                                <label htmlFor="donee" className="form-label mt-2 ">Delivery <span className="text-danger">*</span></label>
+                                                                                <select className="form-control textBox" id="donee" value={delivery} onChange={handleDeliveryChange}>
+                                                                                    <option>Pickup</option>
+                                                                                    <option>Rider</option>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="modal-footer">
+                                                                            <button type="button" className="btn btn-primary" onClick={donationRequest}>Done</button>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="mb-3 mx-3">
-                                                                        <label htmlFor="donee" className="form-label mt-2 ">Delivery <span className="text-danger">*</span></label>
-                                                                        <select className="form-control textBox" id="donee" value={delivery} onChange={handleDeliveryChange}>
-                                                                            <option>Pickup</option>
-                                                                            <option>Rider</option>
-                                                                        </select>
-                                                                    </div>
                                                                 </div>
-                                                                <div className="modal-footer">
-                                                                    <button type="button" className="btn btn-primary" onClick={donationRequest}>done</button>
+                                                            </div>
+                                                        )}
+                                                        <div className="modal fade " id="sentRequest" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                                            <div className="modal-dialog modal-dialog-centered">
+                                                                <div className="modal-content">
+                                                                    <div className="modal-header">
+                                                                        <strong className="me-auto text-success">Sent Request </strong>
+                                                                    </div>
+                                                                    <div className="modal-body">
+                                                                        <div className="mb-3 mt-2 ">
+                                                                            Your Request has been sent
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="modal-footer">
+                                                                        <button type="button" className='btn-primary' data-bs-dismiss="modal" aria-label="Close" onClick={okButton} >Ok</button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="centered-content">
+                                    <div className="text">
+                                        <span>Ooops...</span>
+                                    </div>
+                                    <div className="MainMessage">No Donation Post</div>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="centered-content">
-                                <div className="text">
-                                    <span>Ooops...</span>
-                                </div>
-                                <div className="MainMessage">No Donation Post</div>
-                            </div>
-                        )}
+                            )}
                     </div>
                     {modelData && (
                         <div className="modal fade" id="detailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -227,7 +313,7 @@ export default function ReceiverDashboard() {
                                         </button>
                                     </div>
                                     <div className="modal-body" style={{ maxHeight: '680px', overflowY: 'auto' }}>
-                                    <div id="carouselExampleIndicators" className="carousel slide" data-bs-ride="carousel">
+                                        <div id="carouselExampleIndicators" className="carousel slide" data-bs-ride="carousel">
                                             <div className="carousel-indicators">
                                                 {modelData.imagePaths.map((_, index) => (
                                                     <button
@@ -326,12 +412,18 @@ export default function ReceiverDashboard() {
                                                 <h6>Description</h6>
                                                 <p className='text-justify'>{modelData.donationPost.post_description}</p>
                                             </div>
+                                            <hr className='mt-0' />
+                                            <div className='d-flex justify-content-end'>
+                                                <button className='btn me-2' data-bs-toggle="modal" data-bs-target="#staticBackdrop" style={{ backgroundColor: "#A0F0A8" }} onClick={() => handleRequestClick(modelData.donationPost.donation_id)}>
+                                                    Request
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        )}
+                    )}
                 </div>
             </div>
         </div>

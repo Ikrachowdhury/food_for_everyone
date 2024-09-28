@@ -26,7 +26,9 @@ class DonationPost extends Model
         'receive_time',
         'donee_type',
         'pickup_location',
-        'categories'
+        'categories',
+        'location_lat',
+        'location_lon'
     ];
 
     public function donationRequests()

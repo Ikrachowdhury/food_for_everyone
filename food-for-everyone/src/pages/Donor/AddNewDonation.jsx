@@ -7,15 +7,20 @@ import { MdCloudUpload } from 'react-icons/md';
 import Navbar from '../../components/Navbar';
 import { FaBoxesPacking } from 'react-icons/fa6';
 import { format } from 'date-fns';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import mapboxgl from 'mapbox-gl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJtYW4yOTYiLCJhIjoiY20wOWYwejBlMTJhajJrb21qOTR0YWYxYSJ9.2NVdAp3kdgwt2g9WBZeBJw';
 
 export default function AddNewDonation() {
+    const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState(null);
     const [receiveTime, setReceiveTime] = useState(null);
     const datePickerRef = useRef(null);
     const [name, setName] = useState("");
     const [donationID, setDonationID] = useState(0);
-    const [location, setLocation] = useState("");
     const [expireTime, setExpireTime] = useState(null);
     const [description, setDescription] = useState("");
     const [serves, setServes] = useState("");
@@ -30,20 +35,154 @@ export default function AddNewDonation() {
     const formattedReceiveDate = selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '';
     const locations = useLocation();
     const { donations } = locations.state || {};
-    const [urlArray, setUrlArray] = useState([]);
-    // const urlArray = [];
-    // console.log(donations);
-    useEffect(() => {
-        console.log("Updating urlArray");
-        setUrlArray([image1, image2, image3, image4].filter(img => img !== null));
-        console.log(urlArray);
-    }, [image1, image2, image3, image4]);
-    
-    const updateUrlArray = () => {
-        console.log("ok")
-        setUrlArray([image1, image2, image3, image4].filter(img => img !== null));
-        console.log(urlArray)
+    // const [urlArray, setUrlArray] = useState([]);
+    const [map, setMap] = useState(null);
+    const [defaultLocation, setDefaultLocation] = useState(null);
+    const [clickedLocation, setClickedLocation] = useState(null);
+    const [locationLat, setLocationLat] = useState("");
+    const [locationLon, setLocationLon] = useState("");
+    const [location, setLocation] = useState('');
+    const [placeInfo, setPlaceInfo] = useState('');
+    // const [editFilteredUrls, setEditFilteredUrls] = useState([]);
+    const [previousUrls, setPreviousUrls] = useState([]);
+    const [warning, setWarning] = useState('');
+    const [warningLastReceiveTime, setWarningLastReceiveTime] = useState('');
+    // const [concatenatedUrls, setConcatenatedUrls] = useState([]);
+    // let editFilteredUrls = [];
+
+    // console.log(donations)
+    // console.log(locationLon)
+    const handleDateChange = (date) => {
+        setExpireTime(date);
+        if (date && date < new Date()) {
+            setWarning('Warning: The selected date is in the past!');
+            setExpireTime(null)
+        } else {
+            setWarning('');
+        }
     };
+    const handleSelectedDateChange = (date) => {
+        setSelectedDate(date);
+        if (date && date < new Date() || date && date > expireTime) {
+            setWarningLastReceiveTime('Warning: The last receive time is in the past!');
+            setSelectedDate(null)
+        }
+        else {
+            setWarningLastReceiveTime('');
+        }
+    };
+
+    useEffect(() => {
+        const modalElement = document.getElementById('staticBackdrop');
+        const handleModalShow = () => {
+            if (!map) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    setLocationLat(position.coords.latitude)
+                    setLocationLon(position.coords.longitude)
+                    const defaultLoc = [position.coords.longitude, position.coords.latitude];
+                    setDefaultLocation(defaultLoc);
+
+                    const mapInstance = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/mapbox/streets-v11',
+                        center: defaultLoc,
+                        zoom: 15,
+                    });
+
+                    let marker = new mapboxgl.Marker()
+                        .setLngLat(defaultLoc)
+                        .addTo(mapInstance);
+
+                    const geocoder = new MapboxGeocoder({
+                        accessToken: mapboxgl.accessToken,
+                        mapboxgl: mapboxgl,
+                        marker: false,
+                        placeholder: 'Search for origin place',
+                    });
+
+                    mapInstance.addControl(geocoder);
+
+                    try {
+                        const defaultPlaceInfo = await fetchPlaceInfo(defaultLoc);
+                        setPlaceInfo(defaultPlaceInfo);
+                    } catch (error) {
+                        console.error('Error fetching default place info:', error);
+                    }
+
+                    geocoder.on('result', (e) => {
+                        const originPlace = e.result.center;
+                        marker.setLngLat(originPlace);
+                        mapInstance.flyTo({ center: originPlace, zoom: 15 });
+                        setClickedLocation(originPlace);
+                        setPlaceInfo(formatPlaceInfo(e.result.place_name));
+                    });
+
+                    mapInstance.on('click', async (e) => {
+                        setLocationLat(e.lngLat.lat)
+                        setLocationLon(e.lngLat.lng)
+                        const clickedLoc = [e.lngLat.lng, e.lngLat.lat];
+                        marker.setLngLat(clickedLoc);
+                        mapInstance.flyTo({ center: e.lngLat, zoom: 15 });
+                        setClickedLocation(clickedLoc);
+
+                        try {
+                            const placeInfo = await fetchPlaceInfo(clickedLoc);
+                            setPlaceInfo(placeInfo);
+                        } catch (error) {
+                            console.error('Error fetching place info:', error);
+                        }
+                    });
+
+                    setMap(mapInstance);
+                }, (error) => {
+                    console.error('Error getting location:', error);
+                });
+            }
+        };
+
+        modalElement.addEventListener('shown.bs.modal', handleModalShow);
+
+        return () => {
+            modalElement.removeEventListener('shown.bs.modal', handleModalShow);
+        };
+    }, [map]);
+
+    const fetchPlaceInfo = async (location) => {
+        try {
+            const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${location[0]},${location[1]}.json?access_token=${mapboxgl.accessToken}`);
+            const data = await response.json();
+            const place = data.features[0];
+            return formatPlaceInfo(place.place_name);
+        } catch (error) {
+            console.error('Error fetching place info:', error);
+            return '';
+        }
+    };
+
+    const formatPlaceInfo = (placeName) => {
+        const parts = placeName.split(', ');
+        if (parts.length > 1) {
+            return `${parts[0]}, ${parts[1]}`;
+        }
+        return placeName;
+    };
+
+    const handleSubmit = () => {
+        if (clickedLocation) {
+            setLocation(placeInfo)
+        } else if (defaultLocation) {
+            setLocation(placeInfo)
+        }
+    };
+
+    // useEffect(() => {
+    //     setUrlArray([image1, image2, image3, image4].filter(img => img !== null));
+    // }, [image1, image2, image3, image4]);
+    // console.log(urlArray);
+
+    // const updateUrlArray = () => {
+    //     setUrlArray([image1, image2, image3, image4].filter(img => img !== null));
+    // };
     const handleDoneeTypeChange = (e) => {
         setDoneeType(e.target.value);
     };
@@ -54,31 +193,60 @@ export default function AddNewDonation() {
     const [profileImages, setProfileImages] = useState([null, null, null, null]);
 
     const handleImageChange = (e, index) => {
-        console.log(e)
-        // console.log(index)
+        // console.log(e.target.files[0])
         const files = [...profileImages];
         files[index] = e.target.files[0];
+        console.log(e.target.files[0]);
         setProfileImages(files);
     }
     const handleRemoveImage1 = () => {
         setImage1(null);
-        updateUrlArray();
+        if (donations) {
+            const updatedUrls = [...previousUrls];
+            updatedUrls[0] = null;
+            setPreviousUrls(updatedUrls);
+        }
+        // updateUrlArray();
     };
     const handleRemoveImage2 = () => {
-        console.log("ok")
         setImage2(null);
-        updateUrlArray();
+        if (donations) {
+            const updatedUrls = [...previousUrls];
+            updatedUrls[1] = null;
+            setPreviousUrls(updatedUrls);
+        }
+        // updateUrlArray();
     };
 
     const handleRemoveImage3 = () => {
         setImage3(null);
-        updateUrlArray();
+        if (donations) {
+            if (donations) {
+                const updatedUrls = [...previousUrls];
+                updatedUrls[2] = null;
+                setPreviousUrls(updatedUrls);
+            }
+        }
+        // updateUrlArray();
     };
 
     const handleRemoveImage4 = () => {
         setImage4(null);
-        updateUrlArray();
+        if (donations) {
+            const updatedUrls = [...previousUrls];
+            updatedUrls[3] = null;
+            setPreviousUrls(updatedUrls);
+        }
+
+        // updateUrlArray();
     };
+
+    // const updateConcatenatedUrls = () => {
+    //     const nonEmptyEditUrls = editFilteredUrls.filter(url => url !== "");
+    //     const combinedUrls = filteredUrls.concat(nonEmptyEditUrls);
+    //     setConcatenatedUrls(combinedUrls);
+    //     console.log('Concatenated URLs:', combinedUrls);
+    // };
 
     useEffect(() => {
         if (donations) {
@@ -96,10 +264,19 @@ export default function AddNewDonation() {
             setSelectedDate(new Date(`${year}-${month}-${day}`));
             const [d, m, y] = donations.donationPost.expiredate.split('/');
             setExpireTime(new Date(`${y}-${m}-${d}`));
-            updateUrlArray();
+            setLocationLat(donations.donationPost.location_lat);
+            setLocationLon(donations.donationPost.location_lon)
+            const initialFilteredUrls = [
+                donations.imagePaths[0],
+                donations.imagePaths[1],
+                donations.imagePaths[2],
+                donations.imagePaths[3],
+            ].filter(url => url !== undefined && url !== null);
+            setPreviousUrls(initialFilteredUrls);
+            console.log('Initial Filtered URLs:', initialFilteredUrls);
         }
     }, [donations]);
-// 
+
     async function newDonation(event) {
         event.preventDefault();
         try {
@@ -128,35 +305,51 @@ export default function AddNewDonation() {
                 }
                 return null;
             }));
-            uploadedUrls.forEach((url, index) => {
-                if (url) {
-                    // urlArray.push(url);
-                    setUrlArray(url);
-                    console.log(`Image ${index + 1} URL: ${url}`);
-                }
-            });
+
+            // const filteredUrls = uploadedUrls.filter(url => url !== null);
+            // const mergedUrls = [
+            //     ...previousUrls,
+            //     ...filteredUrls
+            // ].filter((url, index, self) => self.indexOf(url) === index);
+            const filteredUrls = uploadedUrls.filter(url => url !== null);
+
+            // Remove null values from previousUrls
+            const cleanedPreviousUrls = previousUrls.filter(url => url !== null);
+
+            // Merge cleaned previousUrls with filteredUrls and remove duplicates
+            const mergedUrls = [
+                ...cleanedPreviousUrls,
+                ...filteredUrls
+            ].filter((url, index, self) => self.indexOf(url) === index);
+
+            // console.log('Merged URLs:', mergedUrls);
+
+
+            // console.log(mergedUrls)
             setProfileImages([null, null, null, null]);
-        } catch (error) {
-            console.log(error);
-        }
 
-        const formData = new FormData();
-        formData.append('donation_id',donationID)
-        formData.append('user_id', userId);
-        formData.append('post_name', name);
-        formData.append('post_description', description);
-        formData.append('serves', serves);
-        formData.append('expiredate', formattedExpireDate);
-        formData.append('last_receive_date', formattedReceiveDate);
-        formData.append('receive_time', receiveTime);
-        formData.append('donee_type', doneeType);
-        formData.append('pickup_location', location);
-        formData.append('categories', categories);
-        formData.append('urlArray', JSON.stringify(urlArray));
-        console.log(JSON.stringify(urlArray))
+            // console.log('URL in  form:', urlArray);
+            const formData = new FormData();
+            formData.append('donation_id', donationID)
+            formData.append('user_id', userId);
+            formData.append('post_name', name);
+            formData.append('post_description', description);
+            formData.append('serves', serves);
+            formData.append('expiredate', formattedExpireDate);
+            formData.append('last_receive_date', formattedReceiveDate);
+            formData.append('receive_time', receiveTime);
+            formData.append('donee_type', doneeType);
+            formData.append('pickup_location', location);
+            formData.append('categories', categories);
+            if (donations) {
+                formData.append('urlArray', JSON.stringify(mergedUrls));
+            }
+            else {
+                formData.append('urlArray', JSON.stringify(filteredUrls));
+            }
+            formData.append('location_lat', parseFloat(locationLat));
+            formData.append('location_lon', parseFloat(locationLon));
 
-        console.log(donationID, name, description, serves, formattedExpireDate, formattedReceiveDate, receiveTime, doneeType, location, categories, urlArray);
-        try {
             let response = await fetch("http://localhost:8000/api/newdonation", {
                 method: 'POST',
                 body: formData,
@@ -164,12 +357,17 @@ export default function AddNewDonation() {
                     "Accept": 'application/json'
                 }
             });
-
             if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Validation Errors:', errorData.errors);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            // if (!response.ok) {
+            //     throw new Error(`HTTP error! Status: ${response.status}`);
+            // }
             let result = await response.json();
             console.log("Result:", result);
+            navigate("/dashboard")
         } catch (error) {
             console.error('Error:', error);
         }
@@ -230,13 +428,8 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field1' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        if (donations) {
-                                                                            setImage1(donations.imagePaths[0]);
-                                                                            // handleImageChange(e, 0);
-                                                                        } else {
-                                                                            setImage1(URL.createObjectURL(files[0]));
-                                                                            handleImageChange(e, 0);
-                                                                        }
+                                                                        setImage1(URL.createObjectURL(files[0]));
+                                                                        handleImageChange(e, 0);
                                                                     }
                                                                 }} />
                                                                 {
@@ -268,13 +461,12 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field2' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        if (donations) {
-                                                                            setImage2(donations.imagePaths[1]);
-                                                                            // handleImageChange(e, 1);
-                                                                        } else {
-                                                                            setImage2(URL.createObjectURL(files[0]));
-                                                                            handleImageChange(e, 1);
-                                                                        }
+                                                                        // if (donations&& donations.imagePaths[1]!=null) {
+                                                                        //     setImage2(donations.imagePaths[1]);
+                                                                        // } else {
+                                                                        setImage2(URL.createObjectURL(files[0]));
+                                                                        handleImageChange(e, 1);
+                                                                        // }
                                                                         // setImage2(URL.createObjectURL(files[0]));
 
                                                                     }
@@ -306,13 +498,12 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field3' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        if (donations) {
-                                                                            setImage3(donations.imagePaths[2]);
-                                                                            // handleImageChange(e, 2);
-                                                                        } else {
-                                                                            setImage3(URL.createObjectURL(files[0]));
-                                                                            handleImageChange(e, 2);
-                                                                        }
+                                                                        // if (donations && donations.imagePaths[2]!=null) {
+                                                                        //     setImage3(donations.imagePaths[2]);
+                                                                        // } else {
+                                                                        setImage3(URL.createObjectURL(files[0]));
+                                                                        handleImageChange(e, 2);
+                                                                        // }
                                                                     }
                                                                 }} />
                                                                 {
@@ -343,13 +534,12 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field4' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        if (donations) {
-                                                                            setImage4(donations.imagePaths[3]);
-                                                                            // handleImageChange(e, 3);
-                                                                        } else {
-                                                                            setImage4(URL.createObjectURL(files[0]));
-                                                                            handleImageChange(e, 3);
-                                                                        }
+                                                                        // if (donations && donations.imagePaths[3]!=null) {
+                                                                        //     setImage4(donations.imagePaths[3]);
+                                                                        // } else {
+                                                                        setImage4(URL.createObjectURL(files[0]));
+                                                                        handleImageChange(e, 3);
+                                                                        // }
                                                                     }
                                                                 }} />
                                                                 {
@@ -389,19 +579,26 @@ export default function AddNewDonation() {
                                                         <div className="col">
                                                             <label htmlFor="expireTime" className="form-label mt-2">Expire Date <span className="text-danger">*</span></label>
                                                             <div className="input-group">
+                                                                
                                                                 <DatePicker
-                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={expireTime}
-                                                                    onChange={(date) => setExpireTime(date)}
+                                                                    ref={datePickerRef}
+                                                                    wrapperClassName="datepicker"
+                                                                    className="form-control textBox"
+                                                                    selected={expireTime}
+                                                                    onChange={handleDateChange}
                                                                     id="expireTime"
-                                                                    required="required" 
-                                                                    value={expireTime}/>
+                                                                    required
+                                                                    value={expireTime}
+                                                                />
+                                                                {warning && <div className="warning text-danger mt-2">{warning}</div>}
                                                             </div>
                                                         </div>
                                                         <div className="col">
                                                             <label htmlFor="lastReceiveTime" className="form-label mt-2">Last Receive Date <span className="text-danger">*</span></label>
                                                             <div className="input-group">
                                                                 <DatePicker
-                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={selectedDate} onChange={(date) => setSelectedDate(date)} id="lastReceiveTime" required="required" value={selectedDate} />
+                                                                    ref={datePickerRef} wrapperClassName="datepicker" className="form-control textBox" selected={selectedDate} onChange={handleSelectedDateChange} id="lastReceiveTime" required="required" value={selectedDate} />
+                                                                {warningLastReceiveTime && <div className="warning text-danger mt-2">{warningLastReceiveTime}</div>}
                                                             </div>
                                                         </div>
 
@@ -420,7 +617,37 @@ export default function AddNewDonation() {
                                                 </div>
                                                 <div className="my-3">
                                                     <label htmlFor="foodName" className="form-label mt-2 ">Location <span className="text-danger">*</span></label>
-                                                    <input type="text" className="form-control textBox" id="foodName" onChange={(e) => setLocation(e.target.value)} required="required" value={location} />
+                                                    <input type="text" className="form-control textBox" id="foodName" onChange={(e) => setLocation(e.target.value)} required="required" value={location} onFocus={() => {
+                                                        const modalElement = new window.bootstrap.Modal(document.getElementById('staticBackdrop'));
+                                                        modalElement.show();
+                                                    }} />
+
+
+                                                </div>
+                                            </div>
+                                            <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                                <div className="modal-dialog modal-dialog-centered modal-xl" role="document">
+                                                    <div className="modal-content">
+                                                        <div className="modal-header">
+                                                            <h5 className="modal-title" id="exampleModalLongTitle">Location</h5>
+                                                            <button type="button" className="close text-danger" data-bs-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div className="modal-body">
+                                                            <div>
+                                                                <div id="map" style={{ height: '70vh', width: '55vw', margin: 'auto' }}></div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="modal-footer">
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-primary"
+                                                                data-bs-dismiss="modal" onClick={handleSubmit}>
+                                                                Submit
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

@@ -19,6 +19,8 @@ import { useEffect, useState } from 'react';
 export default function RiderList() {
     const [queries, setQueries] = useState("");
     const [riderData, setRiderData] = useState("")
+    const [toast, setToast] = useState("");
+    const [message, setMessage] = useState("");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,6 +45,89 @@ export default function RiderList() {
         };
         fetchData();
     }, []);
+
+    const handleApproveOrganization = async (org_id, email) => {
+        console.log(email)
+        const url = 'http://localhost:8000/api/approveRiderRequest';
+        try {
+            let response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ org_id })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let result = await response.json();
+            console.log("Result:", result);
+            if (response.ok) {
+                let emailResult = await fetch(`http://localhost:8000/api/send-adminApproval-mail/${email}`, {
+                    method: 'GET',
+                    headers: {
+                        "Content-Type": 'application/json',
+                        "Accept": 'application/json'
+                    }
+                });
+                let emailResultData = await emailResult.json();
+                console.warn("email result", emailResultData);
+
+                // if (emailResult.ok) {
+                //     alert("Verification email sent successfully");
+                // } else {
+                //     alert("Error sending verification email", emailResultData);
+                // }
+            }
+            if (result.success) {
+                setMessage("Rider Request accepted Successfully");
+                setToast(true);
+                // alert('Organization Request accepted successfully!');
+                // window.location.reload(); 
+
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while accepting the donation. ' + error.message);
+        }
+    };
+    const handleRejectOrganization = async (org_id) => {
+        console.log(org_id)
+        const url = 'http://localhost:8000/api/rejectOrganizationRequest';
+        try {
+            let response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ org_id })
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            let result = await response.json();
+            console.log("Result:", result);
+            if (result.success) {
+                setMessage("Rider Request Rejected");
+                setToast(true);
+                // alert('Organization Request Rejected successfully!');
+                // window.location.reload(); 
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while accepting the donation. ' + error.message);
+        }
+    };
+    const closeToast = () => {
+        setToast(false)
+        window.location.reload();
+    }
     return (
         <div>
             <Navbar />
@@ -74,6 +159,7 @@ export default function RiderList() {
                                             <th className="text-center"> Email </th>
                                             <th className="text-center"> Mobile </th>
                                             <th className="text-center"> Address </th>
+                                            <th className="text-center"> Approval </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -88,13 +174,19 @@ export default function RiderList() {
                                             return values.some(field => field.toLowerCase().includes(queries.toLowerCase()));
                                         }).map((order, index) => (
                                             <tr key={index} >
-                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{index+1}</td>
-                                                
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{index + 1}</td>
+
                                                 <td className="text-center" style={{ verticalAlign: 'middle', fontSize: '17px' }}>{order.name}</td>
                                                 <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.email}</td>
                                                 <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.phone}</td>
                                                 <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.address}</td>
-                                             
+                                                <td className="text-center">
+                                                    <div className="d-flex justify-content-center">
+                                                        <button className="btn btn-outline-success mx-2" style={{ border: "none" }} onClick={() => handleApproveOrganization(order.id, order.email)}>✓ </button>
+                                                        <button className="btn btn-outline-danger mx-2" style={{ border: "none" }} onClick={() => handleRejectOrganization(order.id)}>X</button>
+                                                    </div>
+                                                </td>
+
                                             </tr>
                                         ))}
                                     </tbody>
@@ -106,6 +198,17 @@ export default function RiderList() {
                                     <span>Ooops...</span>
                                 </div>
                                 <div className="MainMessage">No Rider List</div>
+                            </div>
+                        )}
+                        {toast && (
+                            <div className="toast show bg-light" role="alert" aria-live="assertive" aria-atomic="true" style={{
+                                position: 'fixed', top: '20px', right: '20px', zIndex: 9999, left: '50%', minWidth: '500px',
+                                transform: 'translateX(-50%)',
+                            }}>
+                                <div className="toast-header">
+                                    <strong className="me-auto text-success">{message}</strong>
+                                    <button type="button" className="btn-close" onClick={closeToast} aria-label="Close"></button>
+                                </div>
                             </div>
                         )}
                     </main>

@@ -33,6 +33,8 @@ import Dashboard from './pages/Donor/Dashboard'
 import AddNewDonation from './pages/Donor/AddNewDonation'
 import ReceiverDashboard from './pages/Receiver/ReceiverDashboard'
 import RiderDashboard from './pages/Volunteer/RiderDashboard'
+import ForgetPassword from './components/ForgetPassword'
+import { AdminLogin } from './pages/Admin/AdminLogin'
 // import DonorDashboard from './pages/Donor/DonorDashboard'
 function App() {
 
@@ -43,6 +45,7 @@ function App() {
           <Route path="/" exact element={<Home />}></Route>
           <Route path="/home" exact element={<Home />}></Route>
           <Route path='/login' exact element={<Login />}></Route>
+          <Route path='/adminLogin' exact element={<AdminLogin />}></Route>
           <Route path='/individualRegistration' exact element={<IndividualRegistration />}></Route>
           <Route path='/organizationRegistration' exact element={<OraganizationRegistration />}></Route>
           {/* <Route path='/donerRegistration' exact element={<DonerRegistration />}></Route> */}
@@ -60,6 +63,7 @@ function App() {
           <Route path='/receivedDonation' exact element={<ReceivedDonatinon />}></Route>
           <Route path='/profile' exact element={<Profile />}></Route>
           <Route path='/message' exact element={<Message />}></Route>
+          <Route path='/history' exact element={<History />}></Route>
           {/* <Route path='/requestedDelivery' exact element={<RequestedDelivery />}></Route> */}
           {/* <Route path='/runningDelivery' exact element={<RunningDelivery />}></Route> */}
           {/* <Route path='/donorList' exact element={<DonorList />}></Route> */}
@@ -72,6 +76,7 @@ function App() {
           <Route path='/receiverDashboard' exact element={<ReceiverDashboard />}></Route>
           <Route path='/addNewDonation' exact element={<AddNewDonation />}></Route>
           <Route path='/riderDashboard' exact element={<RiderDashboard />}></Route>
+          <Route path='/forgetPassword' exact element={<ForgetPassword />}></Route>
         </Routes>
       </BrowserRouter>
     </>

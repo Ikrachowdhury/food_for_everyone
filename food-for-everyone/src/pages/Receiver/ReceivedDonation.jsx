@@ -13,11 +13,15 @@ export default function ReceivedDonationList() {
     const [modelData, setModalData] = useState(null);
     const [queries, setQueries] = useState("");
     const [historyData, setHistoryData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     // const [ratingData, setRatingData] = useState([]);
     const [error, setError] = useState(null);
+    const [message, setMessage] = useState("")
     // const staticBackdropModalRef = useRef(null);
     console.log(error)
-
+    const okButton = () => {
+        window.location.reload();
+    }
     const handleDetailsModal = (history) => {
         setModalData(history);
     };
@@ -38,35 +42,14 @@ export default function ReceivedDonationList() {
                 }
                 const result = await response.json();
                 setHistoryData(result.accepted_donations);
+                setIsLoading(false)
             } catch (error) {
+                setIsLoading(false)
                 setError(error.message);
             }
         };
         fetchData();
     }, []);
-
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-
-    //             const response = await fetch(`http://localhost:8000/api/getrating/${donation_id}`, {
-    //                 method: 'GET',
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                     'Accept': 'application/json',
-    //                 },
-    //             });
-
-    //             if (!response.ok) {
-    //                 throw new Error('Network response was not ok');
-    //             }
-    //             const result = await response.json();
-    //         } catch (error) {
-    //             setError(error.message);
-    //         }
-    //     };
-    //     fetchData();
-    // }, []);
 
     const handleRating = async (donationId, rating) => {
         console.log(rating)
@@ -86,14 +69,20 @@ export default function ReceivedDonationList() {
             }
             let result = await response.json();
             if (result.success) {
-                alert('Rating successfully!');
-                window.location.reload();
+                // alert('Rating successfully!');
+                // window.location.reload();
+                setMessage("Rating successfully!")
+                const modalElement = new window.bootstrap.Modal(document.getElementById('ratingModal'));
+                modalElement.show();
             } else {
-                alert('Error: ' + result.message);
+                // alert('Error: ' + result.message);
+                setMessage('Error: ' + result.message);
+                const modalElement = new window.bootstrap.Modal(document.getElementById('ratingModal'));
+                modalElement.show();
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred while rating the donation. ' + error.message);
+            // alert('An error occurred while rating the donation. ' + error.message);
         }
     };
 
@@ -120,64 +109,69 @@ export default function ReceivedDonationList() {
                                 />
                             </div>
                         </section>
-                        {historyData.length > 0 ? (
-                            <section className="table__body">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th className="min-w-100px text-center"> Id </th>
-                                            <th className="min-w-100px text-center"> Post Title </th>
-                                            <th className="min-w-100px text-center"> Donee </th>
-                                            <th className="min-w-100px text-center"> Rating </th>
-                                            <th className="min-w-100px text-center"> Details </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {historyData.filter((data) => {
-                                            const values = Object.values(data).flatMap(field => {
-                                                if (typeof field === 'object' && field !== null) {
-                                                    return Object.values(field).filter(innerField => typeof innerField === 'string');
-                                                }
-                                                return typeof field === 'string' ? field : [];
-                                            });
-
-                                            return values.some(field => field.toLowerCase().includes(queries.toLowerCase()));
-                                        }).map((order, index) => (
-                                            <tr key={index} >
-                                                {/* {setRatingData(order.donation_id)} */}
-                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{index + 1}</td>
-                                                <td className="text-center" style={{ verticalAlign: 'middle', fontSize: '17px' }}>{order.donationPost.post_name}</td>
-                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.donorName}</td>
-                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>
-                                                    {order.rating ? (
-                                                        <p className='mb-0'>{order.rating}</p>
-                                                    ) : (
-                                                        <button
-                                                            className='btn btn-outline-secondary'
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#staticBackdrop"
-                                                            onClick={() => handleDetailsModal(order)}
-                                                        >
-                                                            Rate
-                                                        </button>
-                                                    )}
-                                                </td>
-                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>
-                                                    <button className='btn btn-outline-secondary' data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(order)}>See Details</button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </section>
-                        ) : (
+                        {isLoading ? (
                             <div className="centered-content">
-                                <div className="text">
-                                    <span>Ooops...</span>
-                                </div>
-                                <div className="MainMessage">No History</div>
+                                <div className="text">Loading...</div>
                             </div>
-                        )}
+                        ) :
+                            historyData.length > 0 ? (
+                                <section className="table__body">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th className="min-w-100px text-center"> Id </th>
+                                                <th className="min-w-100px text-center"> Post Title </th>
+                                                <th className="min-w-100px text-center"> Donee </th>
+                                                <th className="min-w-100px text-center"> Rating </th>
+                                                <th className="min-w-100px text-center"> Details </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {historyData.filter((data) => {
+                                                const values = Object.values(data).flatMap(field => {
+                                                    if (typeof field === 'object' && field !== null) {
+                                                        return Object.values(field).filter(innerField => typeof innerField === 'string');
+                                                    }
+                                                    return typeof field === 'string' ? field : [];
+                                                });
+
+                                                return values.some(field => field.toLowerCase().includes(queries.toLowerCase()));
+                                            }).map((order, index) => (
+                                                <tr key={index} >
+                                                    {/* {setRatingData(order.donation_id)} */}
+                                                    <td className="text-center" style={{ verticalAlign: 'middle' }}>{index + 1}</td>
+                                                    <td className="text-center" style={{ verticalAlign: 'middle', fontSize: '17px' }}>{order.donationPost.post_name}</td>
+                                                    <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.donorName}</td>
+                                                    <td className="text-center" style={{ verticalAlign: 'middle' }}>
+                                                        {order.rating ? (
+                                                            <p className='mb-0'>{order.rating}</p>
+                                                        ) : (
+                                                            <button
+                                                                className='btn btn-outline-secondary'
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#staticBackdrop"
+                                                                onClick={() => handleDetailsModal(order)}
+                                                            >
+                                                                Rate
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                    <td className="text-center" style={{ verticalAlign: 'middle' }}>
+                                                        <button className='btn btn-outline-secondary' data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(order)}>See Details</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </section>
+                            ) : (
+                                <div className="centered-content">
+                                    <div className="text">
+                                        <span>Ooops...</span>
+                                    </div>
+                                    <div className="MainMessage">No History</div>
+                                </div>
+                            )}
                     </main>
                     {modelData && (
                         <div className="modal fade" id="detailsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -295,7 +289,23 @@ export default function ReceivedDonationList() {
                             </div>
                         </div>
                     )}
-
+                    <div className="modal fade " id="ratingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <strong className="me-auto text-success">Rating</strong>
+                                </div>
+                                <div className="modal-body">
+                                    <div className="mb-3 mt-2 ">
+                                        {message}
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className='btn-primary' data-bs-dismiss="modal" aria-label="Close" onClick={okButton} >Ok</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                         <div className="modal-dialog modal-dialog-centered" role="document">
                             <div className="modal-content">

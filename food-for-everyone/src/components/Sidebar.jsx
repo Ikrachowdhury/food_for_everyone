@@ -114,7 +114,7 @@ export default function Sidebar() {
                 </div>
               </li> */}
             </>
-          ) : value === 'donee' ? (
+          ) : value === 'donee' || value==='organization' ? (
             <>
               <li>
                 <div onClick={() => navigate('/receiverDashboard')} className='listDiv'>
@@ -135,28 +135,10 @@ export default function Sidebar() {
                 </div>
               </li>
               <li>
-                <div className='listDiv collapsed has-dropdown' data-bs-toggle="collapse" data-bs-target="#auth" aria-expanded="false" aria-controls="auth">
+                <div onClick={() => navigate('/message')} className='listDiv'>
                   <MdMessage className='icons' style={{ color: "#841B2D" }} />
-                  <div>
-                    <span className="link_name ">Message </span>
-                    <span className="link_name"><TiArrowSortedDown /></span>
-                  </div>
+                  <span className="link_name">Message</span>
                 </div>
-                <ul id="auth" className="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                  <li>
-                    <div onClick={() => navigate('/requestedDonation')} className='sublistDiv listDiv'>
-                      <FaUsers className='icons' style={{ color: "red" }} />
-                      <span className="link_namee">Donor</span>
-                    </div>
-                  </li>
-                  <li>
-                    <div onClick={() => navigate('/requestedDonation')} className='sublistDiv listDiv'>
-                      <MdOutlineDirectionsBike className='icons' style={{ color: "blue" }} />
-                      <span className="link_namee">Rider</span>
-                      {/* <a href="#" className='link_name'>Request</a> */}
-                    </div>
-                  </li>
-                </ul>
               </li>
             </>
           ) : value === 'rider' ? (
@@ -181,11 +163,11 @@ export default function Sidebar() {
               </li>
             </>
           ) : null}
-          {value === 'Donor' || value === 'Rider' ? (
+          {value === 'donor' || value === 'Rider' ? (
             <>
               <li>
                 <div onClick={() => navigate('/history')} className='listDiv'>
-                  <FaHistory className='icons' style={{ color: "yellow" }} />
+                  <FaHistory className='icons' style={{ color: "black" }} />
                   <span className="link_name">History</span>
                 </div>
               </li>

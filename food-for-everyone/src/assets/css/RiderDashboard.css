@@ -14,3 +14,12 @@
 .border-end {
     border-right: 1px solid #dee2e6;
 }
+
+.riderMessageLink {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.mapboxgl-control-container {
+    display: none !important;
+}

@@ -1,5 +1,4 @@
 import '../assets/css/home.css'
-// import Sidebar from '../components/Sidebar';
 import image from '../images/images1.jpg'
 import impact5 from "../images/impact5.png"
 import impact6 from "../images/impact6.png"
@@ -12,7 +11,7 @@ const Home = () => {
     const navigate = useNavigate();
     const handleNavigation = (event, card) => {
         if (user_type && user_type === card.value) {
-            event.preventDefault(); 
+            event.preventDefault();
             if (user_type === 'donor') {
                 navigate("/dashboard");
             } else if (user_type === 'donee') {
@@ -28,12 +27,12 @@ const Home = () => {
     };
     const renderCards = () => {
         return jsonData.map((card, index) => (
-            <div className="col text-center px-4 py-5" key={index}>
-                <a 
-                href={`${card.link}?value=${card.value}`} 
-                className="cardLink navigation-grid-element"
-                onClick={(e) => handleNavigation(e, card)} 
-            >
+            <div className="col-md-6 text-center px-5 py-5" key={index}>
+                <a
+                    href={`${card.link}?value=${card.value}`}
+                    className="cardLink navigation-grid-element"
+                    onClick={(e) => handleNavigation(e, card)}
+                >
                     <div className="card cardShadow" >
                         <div className="thumbnail-image-wrapper">
                             <img src={card.image} className="card-img-top thumbnail-image" alt="..." />
@@ -82,17 +81,36 @@ const Home = () => {
                             </div>
                         </section>
                         <section className="px-5">
-                            <div className="pb-5">
+                            <div className="pb-3">
                                 <div>
                                     <h1 className="text-center fw-bold pt-3 getInvolvedHeading">Get Involved</h1>
                                 </div>
                                 <div className="getInvolvedCard">
                                     <div>
-                                        <div className="row row-cols-1 row-cols-xl-3 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+                                        <div className="row row-cols-1 row-cols-xl-3 row-cols-lg-2 row-cols-md-2 row-cols-sm-1 g-4"  style={{padding:"0px 70px"}}>
                                             {renderCards()}
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </section>
+                        <section className="px-5 bg-white pt-3 pb-5">
+                            <div className="pb-5">
+                                <div className='pb-4'>
+                                    <h1 className="text-center fw-bold pt-3 getInvolvedHeading">Who We Are</h1>
+                                </div>
+                                <div>
+                                    <h4 className="about-subt our-story" >Food for Everyone tackles climate change and food insecurity by connecting businesses that have surplus food to communities that can use it. By leveraging the power of technology we match the supply side with the demand side to reduce complexity and make it easier for our partners to collaborate.<br/><br/>
+
+                                        Technology is just the enabler, however, it’s the people who work in our Hubs, in the community and within our partner organisations, that truly unlock the potential of shared food to enable our communities to thrive.</h4>
+                                </div>
+                                {/* <div className="getInvolvedCard">
+                                    <div>
+                                        <div className="row row-cols-1 row-cols-xl-3 row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+                                            {renderCards()}
+                                        </div>
+                                    </div>
+                                </div> */}
                             </div>
                         </section>
                         <section>

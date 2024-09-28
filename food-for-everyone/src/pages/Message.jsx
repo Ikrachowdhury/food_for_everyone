@@ -1,35 +1,155 @@
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
-import "../assets/css/message.css"
-import React, { useState } from 'react';
+import "../assets/css/message.css" 
 import { HiDotsVertical } from 'react-icons/hi';
-const friendsData = [
-    { id: 1, name: "Armanur Rashid", message: "Sonapur", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png" },
+import { useEffect, useState } from 'react';
+const friendsData = [ 
     { id: 2, name: "Ikra Chowdhury", message: "Campus", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png" },
-    { id: 3, name: "Skynet", message: "Maijdee", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png" },
-    { id: 4, name: "Skynet", message: "Seen that canned piece of s?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png" },
-    { id: 5, name: "Robo Cop", message: "Hey, you're arrested!", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/robocop.jpg", time: "13:21" },
-    { id: 6, name: "Termy", message: "I'm studying Spanish...", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/termy.jpg", time: "13:21" },
-    { id: 7, name: "Richard", message: "I'm not sure...", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/rick.jpg", time: "13:21" },
-    { id: 8, name: "XXXXX", message: "Hi, wanna see something?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/rachel.jpeg", time: "13:21" },
-    { id: 9, name: "Optimus", message: "Wanna grab a beer?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/optimus-prime.jpeg", time: "00:32" },
-    { id: 10, name: "Richard", message: "I'm not sure...", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/rick.jpg", time: "13:21" },
-    { id: 11, name: "XXXXX", message: "Hi, wanna see something?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/rachel.jpeg", time: "13:21" },
-];
-const chatFriendsData = [
-    { id: 1, name: "Robo Cop", message: "Hey, you're arrested!", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/robocop.jpg", time: "13:21" },
-    { id: 2, name: "Optimus", message: "Wanna grab a beer?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/optimus-prime.jpeg", time: "00:32" },
-    { id: 3, name: "Skynet", message: "Seen that canned piece of s?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png", time: "13:21", },
-    { id: 4, name: "Skynet", message: "Seen that canned piece of s?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png", time: "13:21" },
-    { id: 5, name: "Skynet", message: "Seen that canned piece of s?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/real-terminator.png", time: "13:21" },
-    { id: 6, name: "Termy", message: "I'm studying Spanish...", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/termy.jpg", time: "13:21" },
-    { id: 7, name: "Richard", message: "I'm not sure...", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/rick.jpg", time: "13:21" },
-    { id: 8, name: "XXXXX", message: "Hi, wanna see something?", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/rachel.jpeg", time: "13:21" },
-    { id: 9, name: "Termy", message: "I'm studying Spanish...", imageUrl: "https://www.clarity-enhanced.net/wp-content/uploads/2020/06/termy.jpg", time: "13:21" },
-];
+    
+]; 
 
-export default function Message() {
-    const [selectedButton, setSelectedButton] = useState('Donar');
+export default function Message() { 
+    const [inboxes, setInboxes] = useState([]); 
+    const [chatHeadInfo, setChatHeadInfo] = useState({}); 
+    const [inboxId, setInboxId] = useState(null); 
+    const [donationId, setDonationId] = useState(null);
+    const [masgType, setMasgType] = useState(null);
+    const [isChatHeadOpen, setIsChatHeadOpen] = useState(false);
+    const [userMessage, setUserMessage] = useState('');
+    const [usermsgarray, setUsermsgarray] = useState([]);
+    const [replyId, seReplyId] = useState(0);
+    const [msgHistory, setMsgHistory] = useState([]);
+    const user_id = localStorage.getItem('user_id');
+
+
+    useEffect(() => {
+        const fetchInboxes = async () => {
+            try {
+                 
+                const response = await fetch(`http://localhost:8000/api/getAllInboxes/${user_id}`); // Replace 8 
+                const result = await response.json();
+
+                if (response.status === 200) {
+                    setInboxes(result.inboxes);  
+                } else {
+                    console.log("Failed to load inboxes");
+                }
+                // if (inboxes.length > 0) {
+                //     inboxes.forEach(async (inbox) => {
+                //         try {
+                //             const response2 = await fetch(`http://localhost:8000/api/getChatHeaadInfo/${inbox.donation_id}/${inbox.reciever_id}`, {
+                //                 method: 'GET',
+                //                 headers: {
+                //                     'Content-Type': 'application/json',
+                //                     'Accept': 'application/json',
+                //                 },
+                //             });
+                //             const data = await response2.json();
+                //             console.log(data.reciever_info);
+        
+                //             // Update chatHeadInfo with the inbox_id as the key
+                //             setChatHeadInfo(data.reciever_info)
+                //         } catch (error) {
+                //             console.error("Error fetching chat head info:", error);
+                //         }
+                //     });
+                // }
+                // console.log(chatHeadInfo);
+            } catch (error) {
+                console.error("Error fetching inboxes:", error);
+            }
+        }; 
+        fetchInboxes();
+ 
+    }, []);
+    
+    useEffect(() => {
+        const fetchChatHeadInfoFromInboxes = async () => {
+            if (inboxes.length > 0) {
+                inboxes.forEach(async (inbox) => {
+                    try {
+                        const response2 = await fetch(`http://localhost:8000/api/getChatHeaadInfo/${inbox.donation_id}/${inbox.reciever_id}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            },
+                        });
+                        const data = await response2.json();
+                        // console.log(data.reciever_info);
+    
+                        // Update chatHeadInfo with the inbox_id as the key 
+                        setChatHeadInfo(prevState => ({
+                            ...prevState,
+                            [inbox.inbox_id]: {
+                                ...data,  // Add the fetched data (e.g., reciever_info)
+                                inbox_id: inbox.inbox_id  // Add the donation_id
+                            },
+                        }));
+                    } catch (error) {
+                        console.error("Error fetching chat head info:", error);
+                    }
+                });
+            }
+          
+        } 
+        fetchChatHeadInfoFromInboxes();
+    }, [inboxes]);
+
+    const setMainChatBoxInfo = async (inbox) => {
+        setInboxId(inbox.inbox_id);
+        setDonationId(inbox.donation_info[0]?.donation_id)
+        setMsgHistory([]);
+        await fetchMessageHistory(inbox.inbox_id);
+
+        setIsChatHeadOpen(true)
+          
+    }
+    useEffect(() => {  
+        //Changes in main chat box info when button clicked       
+    }, [isChatHeadOpen]);
+ 
+  const handleInputChange = (e) => {
+    setUserMessage(e.target.value);
+  };
+ 
+  const handleSendClick = async (replyId) => {
+    console.log('Message:', userMessage);
+    if (userMessage.trim()) {  
+        setUsermsgarray((prevMessages) => [...prevMessages, userMessage]);
+        setUserMessage('');
+
+        const formData = new FormData(); 
+                formData.append("inbox_id",inboxId); 
+                formData.append("reply_id", replyId);
+                formData.append("user_id", user_id);
+                formData.append("msg", userMessage);
+
+                let response = await fetch("http://localhost:8000/api/sendMsg", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        "Accept": 'application/json'
+                    }
+                });
+                let result = await response.json();
+                console.log("Result:", result); 
+      } 
+  };
+
+  const fetchMessageHistory = async (inboxId) => {
+    try {
+        const response = await fetch(`http://localhost:8000/api/getMsghistory/${inboxId}`);
+        const result = await response.json();
+        if (response.status === 200) {
+            setMsgHistory(result.msg_history);   
+        } else {
+            console.log("Failed to load message history");
+        }
+    } catch (error) {
+        console.error("Error fetching message history:", error);
+    }
+}
     return (
         <div>
             <Navbar />
@@ -45,141 +165,80 @@ export default function Message() {
                                             <img className="profile-image" src="https://www.clarity-enhanced.net/wp-content/uploads/2020/06/filip.jpg" alt="Profile img" />
                                             <h6 className='ms-2 mb-0 fw-bold'>Armanur Rashid</h6>
                                             </div>
-                                        <div ><button type="button" className="btn listOption" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                            <HiDotsVertical />
-                                        </button>
-                                            <div className="modal fade" data-bs-backdrop="static" id="exampleModal" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                                <div className="modal-dialog modal-dialog-scrollable">
-                                                    <div className="modal-content">
-                                                        <div className="modal-header">
-                                                            <div className='d-flex'>
-                                                                <button
-                                                                    className={`modal-title me-5 listOption ${selectedButton === 'Donor' ? 'text-primary' : 'text-muted'}`}
-                                                                    id="staticBackdropLabel"
-                                                                    onClick={() => setSelectedButton('Donor')}
-                                                                >
-                                                                    Donor
-                                                                </button>
-                                                                <button
-                                                                    className={`modal-title listOption ${selectedButton === 'Rider' ? 'text-primary' : 'text-muted'}`}
-                                                                    id="staticBackdropLabel"
-                                                                    onClick={() => setSelectedButton('Rider')}
-                                                                >
-                                                                    Rider
-                                                                </button>
-                                                            </div>
-                                                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div className="modal-body">
-                                                            {friendsData.map(friend => (
-                                                                <div key={friend.id} className="friend-drawer list-drawer--onhover">
-                                                                    <img className="profile-image" src={friend.imageUrl} alt={`${friend.name}'s profile`} />
-                                                                    <div className="text">
-                                                                        <h6>{friend.name}</h6>
-                                                                        <p className="text-muted">{friend.message}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        
                                     </div>
-                                    {chatFriendsData.map(friend => (
-                                        <React.Fragment key={friend.id}>
+                                    
+                                    {Object.values(chatHeadInfo).map((inbox, index) => ( 
+
+                                        <div key={index}>
                                             <div className="friend-drawer friend-drawer--onhover">
-                                                <img className="profile-image" src={friend.imageUrl} alt={`${friend.name}'s profile`} />
+                                                {/* <img className="profile-image" src={friend.imageUrl} alt={`${friend.name}'s profile`} /> */}
+                                                <button  onClick={() => setMainChatBoxInfo(inbox)}>
                                                 <div className="text">
-                                                    <h6>{friend.name}</h6>
-                                                    <p className="text-muted">{friend.message}</p>
+                                                    <h6>{inbox.reciever_info[0]?.user_type}:{inbox.reciever_info[0]?.name}</h6>
+                                                    <p className="text-muted">{inbox.donation_info[0]?.post_name}</p>
                                                 </div>
-                                                <span className="time text-muted small">{friend.time}</span>
+                                                <span className="time text-muted small">{inbox.reciever_info[0]?.phone}</span>
+                                                </button>
                                             </div>
                                             <hr className='messageHR'/>
-                                        </React.Fragment>
+                                        </div>
                                     ))}
                                 </div>
                                 <div className="col-md-8" style={{ height: '92vh', overflowY: 'auto', overflowX: "hidden" }}>
                                     <div className="settings-tray">
-                                        <div className="friend-drawer no-gutters friend-drawer--grey">
-                                            <img className="profile-image" src="https://www.clarity-enhanced.net/wp-content/uploads/2020/06/robocop.jpg" alt="" />
-                                            <div className="text">
-                                                <h6>Robo Cop</h6>
-                                                <p className="text-muted">Layin down the law since like before Christ...</p>
-                                            </div>
-                                        </div>
+                                    {isChatHeadOpen ? (
+                               Object.values(chatHeadInfo).map((inbox,index )=> (
+                                inbox.donation_info[0]?.donation_id === donationId ? (  
+                                <div key={index} className="friend-drawer list-drawer--onhover">
+                                    <img className="profile-image" src={inbox.donation_info[0]?.profile_photo_url} alt={`${inbox.reciever_info[0]?.name}'s profile`} />
+                                    <div className="text">
+                                        <h6>{inbox.reciever_info[0]?.name}</h6>
+                                        <p className="text-muted">{inbox.donation_info[0]?.post_name}</p>
                                     </div>
-                                    <div className="chat-panel">
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3">
-                                                <div className="chat-bubble chat-bubble--left">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3 offset-md-9">
-                                                <div className="chat-bubble chat-bubble--right">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3 offset-md-9">
-                                                <div className="chat-bubble chat-bubble--right">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3">
-                                                <div className="chat-bubble chat-bubble--left">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
+                                </div>):null
+                            ))
+                        ) : (
+                            <p>No Chat is Selected</p> // Optional fallback when no inboxId is present
+                        )}
 
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3">
-                                                <div className="chat-bubble chat-bubble--left">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3">
-                                                <div className="chat-bubble chat-bubble--left">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3">
-                                                <div className="chat-bubble chat-bubble--left">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3 offset-md-9">
-                                                <div className="chat-bubble chat-bubble--right">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="row no-gutters">
-                                            <div className="col-md-3 offset-md-9">
-                                                <div className="chat-bubble chat-bubble--right">
-                                                    Hello dude!
-                                                </div>
-                                            </div>
-                                        </div>
+                        
+                                        
+                                    </div>
+                                    <div className="row no-gutters">
+        <div className="col-md-3">
+          <div className="chat-bubble chat-bubble--left">
+            Hello dude!
+          </div>
+        </div>
+      </div> 
+                                    <div className="chat-panel">
+                                    {msgHistory.map((msg, index) => (
+        <div className="row no-gutters" key={index}>
+            <div className={`col-md-3 ${msg.msg_sender_id == user_id ? 'offset-md-9' : ''}`}>
+                <div className={`chat-bubble ${msg.msg_sender_id == user_id ? 'chat-bubble--right' : 'chat-bubble--left'}`}>
+                    {msg.msg}
+                </div>
+            </div>
+        </div>
+    ))}
+                                    {usermsgarray.map((msg, index) => (
+        <div className="row no-gutters" key={index}>
+          <div className="col-md-3 offset-md-9">
+            <div className="chat-bubble chat-bubble--right">
+              {msg}
+            </div>
+          </div>
+        </div>
+      ))}
+                                  
+                                       
                                         <div className="row">
                                             <div className="col-12">
                                                 <div className="chat-box-tray">
-                                                    <input type="text" placeholder="Type your message here..." className='pl-3 messageInput' />
-                                                    <button className='btn'>Send</button>
+                                                    <input type="text" placeholder="Type your message here..." className='pl-3 messageInput'value={userMessage} onChange={handleInputChange} />
+                                                    <button className='btn' onClick={() => handleSendClick(replyId)}>Send</button>
+
                                                 </div>
                                             </div>
                                         </div>

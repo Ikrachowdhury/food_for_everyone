@@ -13,6 +13,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
 import { CiMenuKebab } from 'react-icons/ci';
 mapboxgl.accessToken = 'pk.eyJ1IjoiYXJtYW4yOTYiLCJhIjoiY20wOWYwejBlMTJhajJrb21qOTR0YWYxYSJ9.2NVdAp3kdgwt2g9WBZeBJw';
+import { useNavigate } from 'react-router-dom';
 
 export default function RiderDashboard() {
     const [active, setActive] = useState('no');
@@ -27,6 +28,11 @@ export default function RiderDashboard() {
     const user_id = localStorage.getItem('user_id');
     const [count, setCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+
+    const handleContactButtonClick = (reciever_id) => { 
+        navigate('/message');
+      };
     if (count === 0) {
         setCount(1);
         handleAvailability("no");
@@ -351,7 +357,8 @@ export default function RiderDashboard() {
 
     const handleRejectDeliveryRequest = async (donationID) => {
         console.log(donationID)
-        const url = 'http://localhost:8000/api/rejectDelivery';
+        //sets requested donation to pickup as rider cancelled
+        const url = 'http://localhost:8000/api/rejectDelivery'; 
         try {
             let response = await fetch(url, {
                 method: 'POST',
@@ -363,47 +370,84 @@ export default function RiderDashboard() {
             });
             let result = await response.json();
             console.log("Result:", result);
+
+            //deleted the previously created inboxes for rider
+            const response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+            }); 
             if (response.status === 200) {
-                const postLocation = result.post_location[0];
-                const postLat = postLocation.location_lat;
-                const postLon = postLocation.location_lon;
-                let minDistance = Infinity;
-                let minRiderId = null;
-
-                result.rider_locations.forEach(rider => {
-                    const riderLat = rider.address_lat;
-                    const riderLon = rider.address_lon;
-
-                    const distance = haversineDistance(postLat, postLon, riderLat, riderLon);
-
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        minRiderId = rider.id;
-                    }
-                });
-
-                console.log(minRiderId)
-                try {
-                    let item = { donationID, minRiderId };
-                    console.log(item);
-                    let response = await fetch("http://localhost:8000/api/selectRider", {
+                const result2 = await response2.json(); 
+                console.log(result2)
+            }  
+            //creates new inbox for the doner and donee
+            requestedPostData.forEach(async (item) => { 
+                if (item.donation_id === donationID) {
+                    const formData = new FormData(); 
+                    formData.append("doner_id", item.donorInfo.id);
+                    formData.append("reciever_id", item.doneeInfo.id);
+                    formData.append("donation_id", item.donation_id);
+                    formData.append("masg_type", "onRun");
+            
+                    let response3 = await fetch("http://localhost:8000/api/createInbox", {
                         method: 'POST',
+                        body: formData,
                         headers: {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json"
-                        },
-                        body: JSON.stringify(item)
+                            "Accept": 'application/json'
+                        }
                     });
-                    if (response.status === 200) {
-                        window.location.reload();
-                    }
-                    console.log(response);
-                } catch (error) {
-                    console.error("An error occurred:", error);
+            
+                    let result3 = await response3.json();
+                    console.log("Result:", result3);
                 }
-            } else {
-                alert('Error: ' + result.message);
-            }
+            });
+            
+                 
+                 // if (response.status === 200) {
+            //     const postLocation = result.post_location[0];
+            //     const postLat = postLocation.location_lat;
+            //     const postLon = postLocation.location_lon;
+            //     let minDistance = Infinity;
+            //     let minRiderId = null;
+
+            //     result.rider_locations.forEach(rider => {
+            //         const riderLat = rider.address_lat;
+            //         const riderLon = rider.address_lon;
+
+            //         const distance = haversineDistance(postLat, postLon, riderLat, riderLon);
+
+            //         if (distance < minDistance) {
+            //             minDistance = distance;
+            //             minRiderId = rider.id;
+            //         }
+            //     });
+
+            //     console.log(minRiderId)
+            //     try {
+            //         let item = { donationID, minRiderId };
+            //         console.log(item);
+            //         let response = await fetch("http://localhost:8000/api/selectRider", {
+            //             method: 'POST',
+            //             headers: {
+            //                 "Content-Type": "application/json",
+            //                 "Accept": "application/json"
+            //             },
+            //             body: JSON.stringify(item)
+            //         });
+            //         if (response.status === 200) {
+            //             window.location.reload();
+            //         }
+            //         console.log(response);
+            //     } catch (error) {
+            //         console.error("An error occurred:", error);
+            //     }
+            // } else {
+            //     alert('Error: ' + result.message);
+            // }
+
         } catch (error) {
             console.error('Error:', error);
             alert('An error occurred while accepting the donation. ' + error.message);
@@ -582,7 +626,7 @@ export default function RiderDashboard() {
                                                         <div className="card shadow-sm rounded innerCard p-3">
                                                             <div className='d-flex justify-content-between'>
                                                                 <h6 className='mb-0'>Pickup Information</h6>
-                                                                <a href="" className='riderMessageLink' style={{ textDecoration: "none" }}>Message</a>
+                                                                <a href="" className='riderMessageLink' onClick={() => handleContactButtonClick(item.donorInfo.id)}style={{ textDecoration: "none" }}>Message A</a>
                                                             </div>
                                                             <hr />
                                                             <div className='d-flex align-items-center mb-3'>
@@ -605,7 +649,7 @@ export default function RiderDashboard() {
                                                         <div className="card shadow-sm rounded innerCard p-3">
                                                             <div className='d-flex justify-content-between'>
                                                                 <h6 className='mb-0'>Receiver Information</h6>
-                                                                <a href="" className='riderMessageLink' style={{ textDecoration: "none" }}>Message</a>
+                                                                <a href="" className='riderMessageLink'  onClick={() => handleContactButtonClick(item.doneeInfo.name)}style={{ textDecoration: "none" }}>Message</a>
                                                             </div>
                                                             <hr />
                                                             <div className='d-flex align-items-center mb-3'>

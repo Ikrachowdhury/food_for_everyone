@@ -1,7 +1,8 @@
 import './App.css'
 
 import { Routes, Route, BrowserRouter } from "react-router-dom"
-import Home from './pages/Home'
+import Home from './pages/Home' 
+import Message from './pages/Message'
 // import DonerRegistration from './components/DonerRegistration'
 // import ReceiverDashboard from './pages/Receiver/ReceiverDashboard'
 // import DonorDashboard from './pages/Donor/DonorDashboard'
@@ -19,8 +20,7 @@ import { OraganizationRegistration } from './components/OrganizationRegistration
 import FoodCart from './pages/Receiver/FoodCart'
 import ReceiverHistory from './pages/Receiver/ReceiverHistory'
 import ReceivedDonatinon from './pages/Receiver/ReceivedDonation'
-import Profile from './pages/Profile'
-import Message from './pages/Message'
+import Profile from './pages/Profile' 
 // import RequestedDelivery from './pages/Volunteer/RequestedDelivery'
 // import RunningDelivery from './pages/Volunteer/RunningDelivery'
 // import DonorList from './pages/Admin/DonorList'
@@ -61,7 +61,7 @@ function App() {
           <Route path='/foodCart' exact element={<FoodCart />}></Route>
           <Route path='/doneeHistory' exact element={<ReceiverHistory />}></Route>
           <Route path='/receivedDonation' exact element={<ReceivedDonatinon />}></Route>
-          <Route path='/profile' exact element={<Profile />}></Route>
+          <Route path='/profile' exact element={<Profile />}></Route> 
           <Route path='/message' exact element={<Message />}></Route>
           <Route path='/history' exact element={<History />}></Route>
           {/* <Route path='/requestedDelivery' exact element={<RequestedDelivery />}></Route> */}

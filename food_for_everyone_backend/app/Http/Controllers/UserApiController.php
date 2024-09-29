@@ -1286,26 +1286,38 @@ class UserApiController extends Controller
     public function rejectDelivery(Request $request)
     {
         try {
-            $donation_id = $request->input('donationID');
-            // $donation = RequestDonation::where('donation_id', $donation_id)->first();
-            // if ($donation) {
-            //     $donation->accept_status = 'accepted';
-            //     $donation->save();
-            // }
+            $donation_id = $request->input('donationID'); 
+            $request_donation = RequestDonation::where('donation_id', $donation_id)
+            ->where('accept_status', 'accepted')
+            ->first();
 
-            $post_location = DonationPost::where('donation_id', $donation_id)
-                ->get(['location_lon', 'location_lat']);
+        // Check if the request donation exists
+        if ($request_donation) {
+            // Update the necessary fields
+            $request_donation->delivery = 'Pickup';
+            $request_donation->rider_status = null;
+            $request_donation->rider_id = null;
+            $request_donation->rider_allocation = null;
 
-            $availableRiderIds = RiderAvailability::where('availability', 'yes')
-                ->pluck('rider_id');
+            // Save the changes to the database
+            $request_donation->save();
 
-            $riderLocations = User::whereIn('id', $availableRiderIds)
-                ->get(['id', 'address_lon', 'address_lat']);
+            return response()->json(['message' => 'Delivery updated to Pickup and rider details cleared.'], 200);
+        }
 
-            return response()->json([
-                'post_location' => $post_location,
-                'rider_locations' => $riderLocations,
-            ], 200);
+            // $post_location = DonationPost::where('donation_id', $donation_id)
+            //     ->get(['location_lon', 'location_lat']);
+
+            // $availableRiderIds = RiderAvailability::where('availability', 'yes')
+            //     ->pluck('rider_id');
+
+            // $riderLocations = User::whereIn('id', $availableRiderIds)
+            //     ->get(['id', 'address_lon', 'address_lat']);
+
+            // return response()->json([
+            //     'post_location' => $post_location,
+            //     'rider_locations' => $riderLocations,
+            // ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch  information'], 500);
         }

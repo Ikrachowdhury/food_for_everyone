@@ -1,0 +1,68 @@
+.organizationForm {
+    border: 12px solid #00C2D6;
+}
+
+.registrationInput {
+    border: 1px solid #a5a0a0;
+    height: 3.5rem;
+}
+
+.datepicker {
+    width: 100%;
+}
+
+.heading3 {
+    color: #555;
+}
+
+.OrganizationLabel {
+    font-size: 1.2rem;
+    /* color: #837c7c; */
+}
+
+.heading {
+    font-family: 'Roboto Slab';
+    padding: .2rem 3rem 1rem 3rem !important;
+    margin: 0;
+    font-size: 2.7rem;
+    background-color: #fff;
+    color: #454545;
+    font-weight: 600;
+}
+
+.foodFormHeading {
+    color: lightslategrey;
+    font-weight: bold;
+}
+
+.horizontalLine {
+    margin: 0 0 15px 0;
+}
+
+.exampleSpan {
+    font-size: 0.9rem;
+}
+
+.calendarButton {
+    border-left: none;
+}
+
+.input-group {
+    width: 100%;
+}
+
+.ImageForm {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #1475cf;
+    height: 200px;
+    width: 200px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.registration-content {
+    min-width: 900px;
+}

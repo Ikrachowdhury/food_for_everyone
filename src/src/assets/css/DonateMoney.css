@@ -1,0 +1,95 @@
+.dashboard-content {
+    flex: 1;
+    transition: all 0.5s ease;
+    /* margin-left: 80px; */
+    overflow-x: hidden;
+}
+
+.image-text {
+    color: black;
+    text-align: left;
+    letter-spacing: 1.25px;
+    max-width: 50rem;
+    margin-top: 100px;
+    margin-left: 130px;
+    font-size: 80px;
+    line-height: 100px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.image-minitext {
+    color: #5f4390;
+    text-align: left;
+    letter-spacing: 1.25px;
+    max-width: 50rem;
+    margin-top: 50px;
+    margin-left: 130px;
+    font-size: 50px;
+    line-height: 60px;
+}
+
+.dashboard-image {
+    object-fit: cover;
+    object-position: 50% 0%;
+    width: 100%;
+    max-width: none;
+    height: 89%;
+    position: absolute;
+}
+
+.donationCardText {
+    text-align: center;
+    line-height: 30px;
+}
+
+.donateAmountButton {
+    height: 70px;
+    width: 145px;
+}
+
+.btn-group .btn {
+    border: 1px solid #00cad5;
+    height: 50px;
+    width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.active-btn {
+    background-color: #00cad5;
+    color: white;
+}
+
+.inactive-btn {
+    background-color: white;
+    color: #00cad5;
+}
+
+.btn-group .btn:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.btn-group .btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.donateMotivation {
+    height: 620px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blockquote-custom {
+    max-width: 800px;
+    width: 100%;
+}
+
+.paymentOption {
+    height: 60px;
+    width: 300px;
+}

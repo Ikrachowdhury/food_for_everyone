@@ -71,10 +71,38 @@ public function getAllInboxes($user_id)
         return response()->json(['error' => 'Failed to fetch inboxes'], 500);
     }
 }
+public function deleteInboxes($donation_id)
+{
+    try {
+        // Assuming you have a model called Inbox
+        $deletedRows = Inbox::where('donation_id', $donation_id)->delete();
+        
+        if ($deletedRows) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Inboxes deleted successfully.'
+            ], 200);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No inboxes found with this donation ID.'
+            ], 404);
+        }
+    } catch (\Exception $e) {
+        // Handle the exception
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred: ' . $e->getMessage()
+        ], 500);
+    }
+}
+
+
 public function getChatHeaadInfo($donation_id,$reciever_id)
 { 
     try{
         $reciever_info = User::where('id', $reciever_id)->get(); 
+
 
         if(!$donation_id){ 
         return response()->json([

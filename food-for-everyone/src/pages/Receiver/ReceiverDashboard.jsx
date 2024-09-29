@@ -55,6 +55,7 @@ export default function ReceiverDashboard() {
     const toggleExpand = (donationId) => {
         setExpandedDonationId(prevId => (prevId === donationId ? null : donationId));
     };
+    
 
     function haversineDistance(lat1, lon1, lat2, lon2) {
         const toRadians = (degree) => (degree * Math.PI) / 180;

@@ -36,6 +36,8 @@ Route::post('/riderAcceptRequest', [userApiController::class, 'riderAcceptReques
 Route::post('/rejectDelivery', [userApiController::class, 'rejectDelivery']);
 Route::post('/userImageUpload', [userApiController::class, 'userImageUpload']);
 Route::post('/riderPickedFood', [userApiController::class, 'riderPickedFood']);
+Route::post('/donorDeliveredDonation', [userApiController::class, 'donorDeliveredDonation']);
+
 
 Route::get('/get-total-delivered-donations', [userApiController::class, 'getTotalDeliveredDonations']);
 Route::get('/send-verify-mail/{email}',[userApiController::class,'sendVerifymail']);
@@ -70,3 +72,4 @@ Route::get('/getAllInboxes/{user_id}',[InboxController::class,'getAllInboxes']);
 Route::get('/getChatHeaadInfo/{donation_id}/{reciever_id}',[InboxController::class,'getChatHeaadInfo']);
 Route::post('/sendMsg',[InboxController::class,'sendMsg']);
 Route::get('/getMsghistory/{inbox_id}',[InboxController::class,'getMsghistory']);
+Route::get('/deleteInboxes/{donation_id}',[InboxController::class,'deleteInboxes']);

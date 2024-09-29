@@ -1,0 +1,13 @@
+[{
+        "title": "Individual",
+        "description": "Get food for an individual person",
+        "image": "../src/images/img1.png",
+        "link": "/individualRegistration"
+    },
+    {
+        "title": "Organization",
+        "description": "Get food for an organization",
+        "image": "../src/images/organizations.png",
+        "link": "/organizationRegistration"
+    }
+]

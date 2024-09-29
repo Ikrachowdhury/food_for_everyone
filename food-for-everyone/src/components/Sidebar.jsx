@@ -222,7 +222,7 @@ export default function Sidebar() {
           <li className="profile">
             <div className="profile_details">
               <div className="profile_content">
-                <div className="name"><b>Armanur Rashid</b></div>
+                <div className="name"><b></b></div>
                 <div className="designation"><b>{value}</b></div>
               </div>
             </div>

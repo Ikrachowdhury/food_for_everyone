@@ -95,12 +95,12 @@ export default function RequestedDonation() {
             if (response.status === 200) {
                  const postLocation = result2.post_location[0];
 
-                if(result2.result_type==='delivery_result'){
 
+                 let minDistance = Infinity;
+                 let minRiderId = null;
+                if(result2.result_type==='delivery_result'){
                     const postLat = postLocation.location_lat;
                     const postLon = postLocation.location_lon; 
-                    let minDistance = Infinity;
-                    let minRiderId = null;
                     console.log( postLat +" postLat "+ postLon +" postLon ")
                        
                     result2.rider_locations.forEach(async rider => {
@@ -176,7 +176,6 @@ export default function RequestedDonation() {
                 formData.append("reciever_id", reciever_id);
                 formData.append("donation_id", donationID);
                 formData.append("masg_type", "onRun");
-
                 let response = await fetch("http://localhost:8000/api/createInbox", {
                     method: 'POST',
                     body: formData,
@@ -186,6 +185,24 @@ export default function RequestedDonation() {
                 });
                 let result = await response.json();
                 console.log("Result:", result);
+
+                //for rider he has to also have donee inbox so creating second inbox
+                if(minRiderId!==null){
+                    formData.append("doner_id",donee_id);
+                    formData.append("reciever_id", reciever_id);
+                    formData.append("donation_id", donationID);
+                    formData.append("masg_type", "onRun");
+                    let response = await fetch("http://localhost:8000/api/createInbox", {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            "Accept": 'application/json'
+                        }
+                    });
+                    let result = await response.json();
+                    console.log("Result:", result);
+                }
+
 
             } else {
                 alert('Error: ' + result.message);

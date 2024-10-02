@@ -248,8 +248,17 @@ export default function RequestedDonation() {
             let result = await response.json();
             console.log("Result:", result);
             if (result.success) {
-                alert('Donation rejected successfully!');
-                window.location.reload();
+                const modalElement = new window.bootstrap.Modal(document.getElementById('rejectSuccess'));
+                modalElement.show();
+                const modalElement1 = document.getElementById('staticBackdrop');
+                const modal = window.bootstrap.Modal.getInstance(modalElement1);
+                if (modal) {
+                    modal.hide();
+                }
+                
+                
+                // alert('Donation rejected successfully!');
+                // window.location.reload();
             } else {
                 alert('Error: ' + result.message);
             }
@@ -383,6 +392,23 @@ export default function RequestedDonation() {
                                     <div className="modal-body">
                                         <div className="mb-3 mt-2 ">
                                             {message}
+                                        </div>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button type="button" className='btn-primary' data-bs-dismiss="modal" aria-label="Close" onClick={okButton} >Ok</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal fade" id="rejectSuccess" tabIndex="-1" role="dialog" data-bs-backdrop="static" data-bs-keyboard="false">
+                            <div className="modal-dialog modal-dialog-centered modal" role="document">
+                                <div className="modal-content">
+                                <div className="modal-header">
+                                        <strong className="me-auto text-success">Successful Message</strong>
+                                    </div>
+                                    <div className="modal-body">
+                                        <div className="mb-3 mt-2 ">
+                                            Request has been successfully rejected
                                         </div>
                                     </div>
                                     <div className="modal-footer">

@@ -37,9 +37,13 @@ Route::post('/rejectDelivery', [userApiController::class, 'rejectDelivery']);
 Route::post('/userImageUpload', [userApiController::class, 'userImageUpload']);
 Route::post('/riderPickedFood', [userApiController::class, 'riderPickedFood']);
 Route::post('/donorDeliveredDonation', [userApiController::class, 'donorDeliveredDonation']);
+Route::post('/payment', [userApiController::class, 'payment']);
+Route::post('/otp', [userApiController::class, 'otp']);
+Route::post('/bkashNumberCheck', [userApiController::class, 'bkashNumberCheck']);
+Route::post('/bkashPasswordCheck', [userApiController::class, 'bkashPasswordCheck']);
 
 
-Route::get('/get-total-delivered-donations', [userApiController::class, 'getTotalDeliveredDonations']);
+// Route::get('/get-total-delivered-donations', [userApiController::class, 'getTotalDeliveredDonations']);
 Route::get('/send-verify-mail/{email}',[userApiController::class,'sendVerifymail']);
 Route::get('/send-adminApproval-mail/{email}',[userApiController::class,'sendAdminApprovalmail']);
 Route::get('/send-forgotPass-mail/{email}',[userApiController::class,'sendForgotPasswordmail']);
@@ -62,7 +66,10 @@ Route::get('/riderTotalDelivery/{rider_id}', [userApiController::class, 'riderTo
 Route::get('/findNearestRider/{donation_id}', [userApiController::class, 'findNearestRider']);
 Route::get('/donorProfileRating/{user_id}', [userApiController::class, 'getDonorProfileRating']);
 Route::get('/getNotification/{user_id}', [userApiController::class, 'getNotification']);
-
+Route::get('/donorHistory/{user_id}', [userApiController::class, 'donorHistory']);
+Route::get('/totalServes/{user_id}', [userApiController::class, 'totalServes']);
+Route::get('/totalDonatedPeople/{user_id}', [userApiController::class, 'totalDonatedPeople']);
+Route::get('/getAllRatingDetails/{user_id}', [userApiController::class, 'getAllRatingDetails']);
 
 Route::post('/setDeliveryType', [userApiController::class,'setDeliveryType']);
 

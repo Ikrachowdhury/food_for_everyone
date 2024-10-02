@@ -98,7 +98,7 @@ export default function DirectDonation() {
                                                 <th className="min-w-100px text-center"> Organization Name </th>
                                                 <th className="min-w-100px text-center" style={{ width: "500px" }}> Description </th>
                                                 <th className="min-w-100px text-center"> Address </th>
-                                                <th className="min-w-100px text-center"> Contact </th>
+                                                {/* <th className="min-w-100px text-center"> Contact </th> */}
                                                 <th className="min-w-100px text-center"> Action </th>
                                             </tr>
                                         </thead>
@@ -118,7 +118,7 @@ export default function DirectDonation() {
                                                     <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.org_name}</td>
                                                     <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.org_about}</td>
                                                     <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.user.address}</td>
-                                                    <td className="text-center" style={{ verticalAlign: 'middle' }}><button className="btn btn-outline-primary ">Message</button></td>
+                                                    {/* <td className="text-center" style={{ verticalAlign: 'middle' }}><button className="btn btn-outline-primary ">Message</button></td> */}
                                                     <td className="text-center" style={{ verticalAlign: 'middle' }}><button className="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(data.org_id)}>View info</button></td>
                                                 </tr>
                                             ))}

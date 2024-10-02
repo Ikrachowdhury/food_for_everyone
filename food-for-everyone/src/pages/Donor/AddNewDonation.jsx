@@ -599,7 +599,7 @@ export default function AddNewDonation() {
                                             </div>
                                             <div className="modal-body">
                                                 <div className="mb-3 mt-2 ">
-                                                    New Donation Post Successful
+                                                    Donation Successfully Processed
                                                 </div>
                                             </div>
                                             <div className="modal-footer">

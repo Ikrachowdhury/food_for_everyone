@@ -198,7 +198,7 @@ export default function Achievement() {
                                         <div className="card-body">
                                             <h2 className="cardTitle text-center text-dark fw-bold pb-2">Donation Overview</h2>
                                             <div className='mt-5'>
-                                                <p className='text-muted' style={{ fontSize: "25px" }}>Total Points: {totalDonatePeople.req_id} times</p>
+                                                <p className='text-muted' style={{ fontSize: "25px" }}>Total Rated: {totalDonatePeople.req_id} times</p>
                                                 <p className='text-muted' style={{ fontSize: "25px" }}>Total Donated: {totalServes.totalServesPeople} times</p>
                                                 <p className='text-muted' style={{ fontSize: "25px" }}>Total Money Donation: 25,000/-</p>
                                                 <p className='text-muted' style={{ fontSize: "25px" }}>Total Donated Food: {totalServes.totalServes} Persons</p>

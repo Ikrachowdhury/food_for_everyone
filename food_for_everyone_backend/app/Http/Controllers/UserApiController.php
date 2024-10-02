@@ -763,6 +763,25 @@ class UserApiController extends Controller
             return response()->json(['error' => 'Donation not found'], 404);
         }
         $imagePaths = DB::table('post_images')->where('donation_id', $donation_id)->pluck('image_path');
+
+
+        // $donationIds = DonationPost::where('user_id', $user_id)
+        // ->pluck('donation_id');
+        // $uniqueUserCount = RequestDonation::whereIn('donation_id', $donationIds)
+        // ->where('accept_status', 'delivered')
+        // ->distinct()
+        // ->count('user_id');
+        // $reqIds = RequestDonation::whereIn('donation_id', $donationIds)
+        // ->where('accept_status', 'delivered')
+        // ->pluck('req_id');
+        // $ratings = Rating::whereIn('req_id', $reqIds)
+        // ->get('rating');
+        // $averageRating = $ratings->avg('rating');
+
+        // $matchingCount = Rating::whereIn('req_id', $reqIds)
+        // ->count();
+
+        
         return response()->json([
             'donationPost' => $donationPost,
             'imagePaths' => $imagePaths
@@ -875,47 +894,50 @@ class UserApiController extends Controller
 
     // Donee Dashboard API
     public function getDonationIdsPosts($user_id)
-    {
-        try {
-            // $now = now()->format('d/m/Y');
-            $now = now()->format('d/m/Y');
-            $user_type = User::where('id', $user_id)->pluck('user_type')->first();
-            $requestDonationIds = RequestDonation::where('user_id', $user_id)
-            
-            ->pluck('donation_id')->toArray();
-            if ($user_type == 'donee') {
-                $donationIdsWithUserIds = DonationPost::select('donation_id', 'user_id')
-                    ->where(function ($query) {
-                        $query->where('donee_type', 'Individual Person')
-                            ->orWhere('donee_type', 'Anyone');
-                    })
-                    ->whereRaw("STR_TO_DATE(expiredate, '%d/%m/%Y') >= STR_TO_DATE(?, '%d/%m/%Y')", [$now])
-                    ->get();
-            } else if ($user_type == 'organization') {
-                $donationIdsWithUserIds = DonationPost::select('donation_id', 'user_id')
-                    ->where(function ($query) {
-                        $query->where('donee_type', 'Organization')
-                            ->orWhere('donee_type', 'Anyone');
-                    })
-                    ->whereRaw("STR_TO_DATE(expiredate, '%d/%m/%Y') >= STR_TO_DATE(?, '%d/%m/%Y')", [$now])
+{
+    try {
+        $now = now()->format('d/m/Y');
+        $user_type = User::where('id', $user_id)->pluck('user_type')->first();
+        
+        // Get the IDs of the user's requests and other accepted donations
+        $requestDonationIds = RequestDonation::where('user_id', $user_id)->pluck('donation_id')->toArray();
+        $othersAcceptedDonationsIds = RequestDonation::whereIn('accept_status', ['accepted', 'delivered', 'canceled'])->pluck('donation_id')->toArray();
 
-                    // ->whereDate('expiredate', '>=', now())
-                    ->get();
-            }
-
-            $filteredDonationIdsWithUserIds = $donationIdsWithUserIds->filter(function ($donationPost) use ($requestDonationIds) {
-                return !in_array($donationPost->donation_id, $requestDonationIds);
-            })->values();
-
-            // Get the total count of donation IDs
-
-            return response()->json([
-                'donation_ids_with_user_ids' => $filteredDonationIdsWithUserIds,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to fetch donation IDs'], 500);
+        // Get donation posts based on user type (donee or organization)
+        if ($user_type == 'donee') {
+            $donationIdsWithUserIds = DonationPost::select('donation_id', 'user_id')
+                ->where(function ($query) {
+                    $query->where('donee_type', 'Individual Person')
+                          ->orWhere('donee_type', 'Anyone');
+                })
+                ->whereRaw("STR_TO_DATE(expiredate, '%d/%m/%Y') >= STR_TO_DATE(?, '%d/%m/%Y')", [$now])
+                ->get();
+        } else if ($user_type == 'organization') {
+            $donationIdsWithUserIds = DonationPost::select('donation_id', 'user_id')
+                ->where(function ($query) {
+                    $query->where('donee_type', 'Organization')
+                          ->orWhere('donee_type', 'Anyone');
+                })
+                ->whereRaw("STR_TO_DATE(expiredate, '%d/%m/%Y') >= STR_TO_DATE(?, '%d/%m/%Y')", [$now])
+                ->get();
         }
+
+        // Combine the arrays of donation IDs to be removed
+        $removeIds = array_merge($requestDonationIds, $othersAcceptedDonationsIds);
+
+        // Filter out the donation posts that match any of the IDs in $removeIds
+        $filteredDonationIdsWithUserIds = $donationIdsWithUserIds->filter(function ($donationPost) use ($removeIds) {
+            return !in_array($donationPost->donation_id, $removeIds);
+        })->values();
+
+        // Return the filtered donation posts
+        return response()->json([
+            'donation_ids_with_user_ids' => $filteredDonationIdsWithUserIds,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to fetch donation IDs'], 500);
     }
+}
 
 
     // request donation API

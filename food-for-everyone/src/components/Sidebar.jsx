@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 // import { TiArrowSortedDown } from 'react-icons/ti';
 import { RiUserReceived2Fill } from 'react-icons/ri';
 import { GrOrganization } from 'react-icons/gr';
+import { FaBuildingNgo } from 'react-icons/fa6';
 
 export default function Sidebar() {
   const isOpen = useSelector(state => state.isOpen);
@@ -121,8 +122,8 @@ export default function Sidebar() {
               </li>
               <li>
                 <div onClick={() => navigate('/directDonation')} className='listDiv'>
-                  <GiPayMoney className='icons' style={{ color: "red" }} />
-                  <span className="link_name">Direct Donation</span>
+                  <FaBuildingNgo className='icons' style={{ color: "red" }} />
+                  <span className="link_name">Organization List</span>
                 </div>
               </li>
               <li>

@@ -608,7 +608,7 @@ export default function RiderDashboard() {
                                                         <div className="card shadow-sm rounded innerCard p-3">
                                                             <div className='d-flex justify-content-between'>
                                                                 <h6 className='mb-0'>Pickup Information</h6>
-                                                                <a href="" className='riderMessageLink' onClick={() => handleContactButtonClick(item.donation_id,item.donorInfo.id)}style={{ textDecoration: "none" }}>Message A</a>
+                                                                <a href="" className='riderMessageLink' onClick={() => handleContactButtonClick(item.donation_id,item.donorInfo.id)}style={{ textDecoration: "none" }}>Message</a>
                                                             </div>
                                                             <hr />
                                                             <div className='d-flex align-items-center mb-3'>

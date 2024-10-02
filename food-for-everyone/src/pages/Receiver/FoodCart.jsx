@@ -4,12 +4,17 @@ import { HiMapPin } from 'react-icons/hi2';
 import { RiTimeFill, RiUserReceived2Fill } from 'react-icons/ri';
 import Navbar from '../../components/Navbar';
 import { FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CiMenuKebab } from 'react-icons/ci';
 import { IoPersonSharp, IoTime } from 'react-icons/io5';
 import { FaLocationDot, FaRegCalendarDays } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 const user_id = localStorage.getItem('user_id');
+import mapboxgl from 'mapbox-gl';
+import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJtYW4yOTYiLCJhIjoiY20wOWYwejBlMTJhajJrb21qOTR0YWYxYSJ9.2NVdAp3kdgwt2g9WBZeBJw';
 
 export default function FoodCart() {
     const [selectedDonation, setSelectedDonation] = useState(null);
@@ -20,14 +25,114 @@ export default function FoodCart() {
     const [isOnRunLoading, setIsOnRunLoading] = useState(true);
     const [message, setMessage] = useState("")
     const navigate = useNavigate();
-    console.log(error)
+    const mapContainer = useRef(null);
+    const map = useRef(null);
+    const [mapData, setMapData] = useState({ origin: null, destination: null });
+    const user_id = localStorage.getItem('user_id');
+ 
 
-    const handleContactButtonClick = (donation_id) => { 
+    const handleContactButtonClick = (donation_id) => {
         navigate('/message', { state: { donation_id } });
-      };
+    };
     const okButton = () => {
         window.location.reload();
     }
+
+    const handleShowMapModal = (post_lon, post_lat, doneeLon, doneeLat) => {
+        const origin = [post_lon, post_lat];
+        const destination = [doneeLon, doneeLat];
+        console.log('Setting mapData:', { origin, destination });
+        setMapData({
+            origin,
+            destination,
+        });
+    };
+
+    useEffect(() => {
+        const modalElement = document.getElementById('mapModal');
+        const handleMapLoad = () => {
+            if (!mapContainer.current) {
+                console.error("Map container is not available.");
+                return;
+            }
+            console.log("Initializing map...");
+            map.current = new mapboxgl.Map({
+                container: mapContainer.current,
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: mapData.origin,
+                zoom: 10,
+            });
+
+            const directions = new MapboxDirections({
+                accessToken: mapboxgl.accessToken,
+                unit: 'metric',
+                profile: 'mapbox/driving',
+                interactive: false,
+                controls: {
+                    instructions: false,
+                },
+            });
+
+            map.current.addControl(directions, 'top-left');
+            map.current.on('load', () => {
+                console.log(mapData.origin);
+                if (mapData.origin && mapData.destination) {
+                    directions.setOrigin(mapData.origin);
+                    directions.setDestination(mapData.destination);
+                }
+            });
+
+            const handleGeolocation = (position) => {
+                const { longitude, latitude } = position.coords;
+                map.current.setCenter([longitude, latitude]);
+                directions.setOrigin([longitude, latitude]);
+            };
+
+            const handleGeolocationError = () => {
+                map.current.setCenter([-2.24, 53.48]);
+            };
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(handleGeolocation, handleGeolocationError, {
+                    enableHighAccuracy: true,
+                });
+            } else {
+                handleGeolocationError();
+            }
+        };
+
+        const handleModalShown = () => {
+            if (!map.current) {
+                handleMapLoad();
+            } else {
+                setTimeout(() => {
+                    if (map.current) {
+                        map.current = null;
+                    }
+                }, 200);
+            }
+        };
+
+        const handleResize = () => {
+            if (map.current) {
+                map.current.resize();
+            }
+        };
+
+        if (modalElement) {
+            modalElement.addEventListener('shown.bs.modal', handleModalShown);
+        } else {
+            console.error("Modal element is not found.");
+        }
+        window.addEventListener('resize', handleResize);
+        return () => {
+            if (map.current) map.current.remove();
+            if (modalElement) {
+                modalElement.removeEventListener('shown.bs.modal', handleModalShown);
+            }
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [mapData]);
 
     useEffect(() => {
         if (selectedDonation) {
@@ -67,7 +172,6 @@ export default function FoodCart() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const user_id = localStorage.getItem('user_id');
                 const response = await fetch(`http://localhost:8000/api/doneeOnRunPost/${user_id}`, {
                     method: 'GET',
                     headers: {
@@ -104,14 +208,14 @@ export default function FoodCart() {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ donationID })
+                body: JSON.stringify({ donationID,user_id})
             });
             console.log(donationID)
 
             let result = await response.json();
             console.log("Result:", result);
             if (result.success === true) {
-                setMessage("Your Request has been sent")
+                setMessage("Reques canceled sucessfully")
                 const modalElement = new window.bootstrap.Modal(document.getElementById('cancelRequestModal'));
                 modalElement.show();
             } else {
@@ -124,43 +228,40 @@ export default function FoodCart() {
         }
     };
 
-    const handleRejectOnRun = async (donationID) => {
-        const user_type = localStorage.getItem("user_type")
-        let item = { donationID, user_type }
-        console.log(item)
-        // console.log(donationId)
-        const url = 'http://localhost:8000/api/reject-DonorOnRun';
-        try {
-            let response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(item)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            let result = await response.json();
-            console.log("Result:", result);
-            if (result.success) {
-                setMessage("Donation canceled successfully!")
-                const modalElement = new window.bootstrap.Modal(document.getElementById('cancelRequestModal'));
-                modalElement.show();
-                // alert('Donation canceled successfully!');
-                // window.location.reload();
-            } else {
-                alert('Error: ' + result.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred while canceling the donation. ' + error.message);
-        }
-    };
+    // const handleRejectOnRun = async (donationID) => {
+    //     const user_type = localStorage.getItem("user_type")
+    //     let item = { donationID, user_type }
+    //     console.log(item)
+    //     const url = 'http://localhost:8000/api/reject-DonorOnRun';
+    //     try {
+    //         let response = await fetch(url, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Accept': 'application/json'
+    //             },
+    //             body: JSON.stringify(item)
+    //         });
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! Status: ${response.status}`);
+    //         }
+    //         let result = await response.json();
+    //         console.log("Result:", result);
+    //         if (result.success) {
+    //             setMessage("Donation canceled successfully!")
+    //             const modalElement = new window.bootstrap.Modal(document.getElementById('cancelRequestModal'));
+    //             modalElement.show();
+    //         } else {
+    //             alert('Error: ' + result.message);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         alert('An error occurred while canceling the donation. ' + error.message);
+    //     }
+    // };
 
     const handleAcceptDonation = async (donationId) => {
-        // console.log(donationID)
+        console.log(donationId)
         const url = 'http://localhost:8000/api/doneeDeliveredDonation';
         try {
             let response = await fetch(url, {
@@ -176,6 +277,7 @@ export default function FoodCart() {
             }
             let result = await response.json();
             console.log("Result:", result);
+
             if (result.success) {
                 setMessage("Donation Received successfully!")
                 const modalElement = new window.bootstrap.Modal(document.getElementById('cancelRequestModal'));
@@ -184,22 +286,23 @@ export default function FoodCart() {
                 alert('Error: ' + result.message);
             }
 
-            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationId}`, {
-                method: 'GET', 
+            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationId}/${user_id}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
             });
-            if (!response2.ok) {
-                const errorData = await response2.json();
-                throw new Error(`Error fetching response2: ${errorData.message || 'Unknown error'}`);
-            }
-            const result2 = await response2.json(); 
-            console.log(result2);
+            // if (!response2.ok) {
+            //     const errorData = await response2.json();
+            //     throw new Error(`Error fetching response2: ${errorData.message || 'Unknown error'}`);
+            // }
+            // const result2 = await response2.json();
+            // console.log(result2);
+             
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred while accepting the donation. ' + error.message);
+            // alert('An error occurred while accepting the donation. ' + error.message);
         }
     };
     return (
@@ -307,8 +410,14 @@ export default function FoodCart() {
                                                                                 style={{ cursor: 'pointer' }}
                                                                             />
                                                                             <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                                <li>
+                                                                                    <button
+                                                                                        className="dropdown-item" data-bs-toggle="modal" data-bs-target="#mapModal" onClick={() => handleShowMapModal(donation.donationPost.location_lon, donation.donationPost.location_lat, donation.doneeLon, donation.doneeLat)}
+                                                                                    >
+                                                                                        Map
+                                                                                    </button>
+                                                                                </li>
                                                                                 <li><button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(donation)}>Full Details</button></li>
-                                                                                <li><button className="dropdown-item text-danger" onClick={() => handleRejectOnRun(donation.donationPost.donation_id)}>Cancel Request</button></li>
                                                                                 <li ><button className="dropdown-item text-success" onClick={() => handleAcceptDonation(donation.donationPost.donation_id)}>Mark as Delivered</button></li>
                                                                             </ul>
                                                                         </div>
@@ -336,7 +445,7 @@ export default function FoodCart() {
                                                                     </div>
                                                                     <div className="col-4 d-flex flex-column justify-content-center">
                                                                         <div>
-                                                                            <button className='btn donationButton' onClick={() => handleContactButtonClick(donation.donationPost.donation_id)}  style={{ backgroundColor: "yellow" }}>Contact</button>
+                                                                            <button className='btn donationButton' onClick={() => handleContactButtonClick(donation.donationPost.donation_id)} style={{ backgroundColor: "yellow" }}>Contact</button>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -485,6 +594,22 @@ export default function FoodCart() {
                                     </div>
                                     <div className="modal-footer">
                                         <button type="button" className='btn-primary' data-bs-dismiss="modal" aria-label="Close" onClick={okButton} >Ok</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal fade" id="mapModal" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" tabIndex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+                            <div className="modal-dialog modal-lg">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <div>
+                                            <h6 className="modal-title text-info" id="mapModalLabel">A: Pickup Point</h6>
+                                            <h6 className="modal-title" id="mapModalLabel" style={{ color: "#a47ae2" }}>B: Delivery Point</h6>
+                                        </div>
+                                        <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <div ref={mapContainer} style={{ height: '50vh', width: '100%' }} />
                                     </div>
                                 </div>
                             </div>

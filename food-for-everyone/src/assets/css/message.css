@@ -18,40 +18,46 @@
     float: right;
 }
 
-.settings-tray--right i {
+
+/* .settings-tray--right i {
     margin-top: 10px;
     font-size: 25px;
     color: grey;
     margin-left: 14px;
     transition: 0.3s;
-}
+} */
 
-.settings-tray--right i:hover {
+
+/* .settings-tray--right i:hover {
     color: #74b9ff;
     cursor: pointer;
-}
+} */
 
-.search-box {
+
+/* .search-box {
     background: #fafafa;
     padding: 10px 13px;
-}
+} */
 
-.search-box .input-wrapper {
+
+/* .search-box .input-wrapper {
     background: #fff;
     border-radius: 40px;
-}
+} */
 
-.search-box .input-wrapper i {
+
+/* .search-box .input-wrapper i {
     color: grey;
     margin-left: 7px;
     vertical-align: middle;
-}
+} */
 
-.messageInput {
+
+/* .messageInput {
     border: none;
     border-radius: 30px;
     width: 80%;
-}
+} */
 
 input:focus {
     outline: none;
@@ -59,15 +65,22 @@ input:focus {
 
 .friend-drawer {
     padding: 10px 15px;
-    display: flex;
     vertical-align: baseline;
     background: #fff;
     transition: 0.3s ease;
 }
 
-.friend-drawer--grey {
-    background: #eee;
+.drawer-friend {
+    padding: 10px 0px;
+    vertical-align: baseline;
+    background: #fff;
+    transition: 0.3s ease;
 }
+
+
+/* .friend-drawer--grey {
+    background: #eee;
+} */
 
 .friend-drawer .text {
     margin-left: 12px;
@@ -83,29 +96,37 @@ input:focus {
     margin: 0;
 }
 
-.friend-drawer .time {
-    color: grey;
-}
 
-.friend-drawer--onhover:hover {
+/* .friend-drawer .time {
+    color: grey;
+} */
+
+
+/* .friend-drawer--onhover:hover {
     background: #74b9ff;
     cursor: pointer;
-}
+} */
 
-.friend-drawer--onhover:hover p,
+
+/* .friend-drawer--onhover:hover p,
 .friend-drawer--onhover:hover h6,
 .friend-drawer--onhover:hover .time {
     color: #fff !important;
-}
+} */
 
 .list-drawer--onhover:hover {
-    background: #dce2e9;
+    /* background: #dce2e9; */
     cursor: pointer;
 }
 
 .messageHR {
     margin: 5px auto;
-    width: 60%;
+    width: 80%;
+}
+
+.listItem:hover {
+    background-color: #eee;
+    cursor: pointer;
 }
 
 .chat-bubble {

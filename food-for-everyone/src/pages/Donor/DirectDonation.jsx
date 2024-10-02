@@ -54,12 +54,10 @@ export default function DirectDonation() {
                     throw new Error('Network response was not ok');
                 }
                 const result = await response.json();
-                // console.log(result)
                 setorganizationData(result.combinedData)
                 setIsLoading(false)
             } catch (error) {
                 setIsLoading(false)
-                // alert(error.message);
             }
         };
         fetchData();

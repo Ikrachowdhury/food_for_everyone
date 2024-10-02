@@ -72,4 +72,4 @@ Route::get('/getAllInboxes/{user_id}',[InboxController::class,'getAllInboxes']);
 Route::get('/getChatHeaadInfo/{donation_id}/{reciever_id}',[InboxController::class,'getChatHeaadInfo']);
 Route::post('/sendMsg',[InboxController::class,'sendMsg']);
 Route::get('/getMsghistory/{inbox_id}',[InboxController::class,'getMsghistory']);
-Route::get('/deleteInboxes/{donation_id}',[InboxController::class,'deleteInboxes']);
+Route::get('/deleteInboxes/{donation_id}/{reciever_id}',[InboxController::class,'deleteInboxes']);

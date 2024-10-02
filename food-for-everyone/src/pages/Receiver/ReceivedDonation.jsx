@@ -72,6 +72,11 @@ export default function ReceivedDonationList() {
                 // alert('Rating successfully!');
                 // window.location.reload();
                 setMessage("Rating successfully!")
+                const modalElement1 = document.getElementById('staticBackdrop');
+                const modal = window.bootstrap.Modal.getInstance(modalElement1); 
+                if (modal) {
+                    modal.hide(); 
+                }
                 const modalElement = new window.bootstrap.Modal(document.getElementById('ratingModal'));
                 modalElement.show();
             } else {

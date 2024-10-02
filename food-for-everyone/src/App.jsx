@@ -18,7 +18,6 @@ import GetFoodOption from './components/GetFoodOption'
 import { IndividualRegistration } from './components/IndividualRegistration'
 import { OraganizationRegistration } from './components/OrganizationRegistration'
 import FoodCart from './pages/Receiver/FoodCart'
-import ReceiverHistory from './pages/Receiver/ReceiverHistory'
 import ReceivedDonatinon from './pages/Receiver/ReceivedDonation'
 import Profile from './pages/Profile' 
 // import RequestedDelivery from './pages/Volunteer/RequestedDelivery'
@@ -59,7 +58,6 @@ function App() {
           <Route path='/donateMoney' exact element={<DonateMoney />}></Route>
           <Route path='/history' exact element={<History />}></Route>
           <Route path='/foodCart' exact element={<FoodCart />}></Route>
-          <Route path='/doneeHistory' exact element={<ReceiverHistory />}></Route>
           <Route path='/receivedDonation' exact element={<ReceivedDonatinon />}></Route>
           <Route path='/profile' exact element={<Profile />}></Route> 
           <Route path='/message' exact element={<Message />}></Route>

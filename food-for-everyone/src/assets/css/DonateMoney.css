@@ -93,3 +93,12 @@
     height: 60px;
     width: 300px;
 }
+
+.donate-content {
+    flex-grow: 1;
+    /* Allow the main content to take up remaining space */
+    transition: margin-left 0.3s ease;
+    /* Smooth transition for margin changes */
+    /* Optional: Set a min-width to prevent it from collapsing too much */
+    min-width: 300px;
+}

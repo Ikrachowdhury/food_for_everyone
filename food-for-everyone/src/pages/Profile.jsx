@@ -8,6 +8,7 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 mapboxgl.accessToken = 'pk.eyJ1IjoiYXJtYW4yOTYiLCJhIjoiY20wOWYwejBlMTJhajJrb21qOTR0YWYxYSJ9.2NVdAp3kdgwt2g9WBZeBJw';
+import userImage from "../images/avatar.png"
 
 export default function Profile() {
     const [profileData, setProfileData] = useState({});
@@ -125,9 +126,6 @@ export default function Profile() {
         }
     }
     const changeAddress = async () => {
-        console.log(location)
-        console.log(locationLat)
-        console.log(locationLon)
         try {
             const user_id = localStorage.getItem('user_id');
             let item = { user_id, location, locationLat, locationLon };

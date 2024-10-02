@@ -6,10 +6,10 @@ import { BiSolidDonateHeart, BiSolidReport } from 'react-icons/bi';
 import { GiAchievement, GiPayMoney, GiReceiveMoney } from 'react-icons/gi';
 import { CiSquareQuestion } from 'react-icons/ci';
 import { FcMoneyTransfer, FcMultipleInputs } from 'react-icons/fc';
-import {  FaHistory, FaUsers } from 'react-icons/fa';
+import {  FaHistory } from 'react-icons/fa';
 // import { IoIosArrowDown } from 'react-icons/io';
 import { useSelector } from 'react-redux';
-import { TiArrowSortedDown } from 'react-icons/ti';
+// import { TiArrowSortedDown } from 'react-icons/ti';
 import { RiUserReceived2Fill } from 'react-icons/ri';
 import { GrOrganization } from 'react-icons/gr';
 
@@ -17,6 +17,7 @@ export default function Sidebar() {
   const isOpen = useSelector(state => state.isOpen);
   const navigate = useNavigate();
   const [value, setValue] = useState('');
+  const [profileData, setProfileData] = useState('');
 
   const logout = () => {
     localStorage.clear(); 
@@ -38,9 +39,32 @@ export default function Sidebar() {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const user_id = localStorage.getItem('user_id');
+            const response = await fetch(`http://localhost:8000/api/profile/${user_id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result = await response.json();
+            setProfileData(result.user.name);
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+    fetchData();
+}, []);
+
   return (
     <>
-
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <ul className="nav-list">
           {value === 'donor' ? (
@@ -199,12 +223,12 @@ export default function Sidebar() {
                   <span className="link_name">Riders</span>
                 </div>
               </li>
-              <li>
+              {/* <li>
                 <div onClick={() => navigate('/riderList')} className='listDiv'>
                   <BiSolidReport  className='icons' style={{ color: "black" }} />
                   <span className="link_name">Reports</span>
                 </div>
-              </li>
+              </li> */}
               {/* <li>
                 <div onClick={() => navigate('/donationPostList')} className='listDiv'>
                   <FaClipboardList className='icons' style={{ color: "violet" }} />
@@ -222,7 +246,7 @@ export default function Sidebar() {
           <li className="profile">
             <div className="profile_details">
               <div className="profile_content">
-                <div className="name"><b></b></div>
+                <div className="name"><b>{profileData}</b></div>
                 <div className="designation"><b>{value}</b></div>
               </div>
             </div>

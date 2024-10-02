@@ -12,7 +12,7 @@ use App\Models\RiderApproval;
 use App\Models\User;
 use App\Models\orgInfo;
 use App\Models\Rating;
-use App\Models\Inbox;  
+use App\Models\Inbox;
 // use Carbon\Carbon;
 use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Http\Request;
@@ -85,7 +85,7 @@ class UserApiController extends Controller
             $user->email = $data['email'];
             $user->password = bcrypt($data['password']);
             $user->phone = $data['phone'];
-            $user->profile_img = "https://res-console.cloudinary.com/de0xjzms6/thumbnails/v1/image/upload/v1725364995/c3pldjZ6NnhkcGdlbGM3dXNvNjY=/drilldown";
+            $user->profile_img = "http://res.cloudinary.com/de0xjzms6/image/upload/v1727786587/d7uylxxrm9wbjey8ejqg.png";
             $user->user_type = $data['value'] ?? null;
             $user->address = $data['placeInfo'] ?? null;
             $user->address_lat = $data['locationLat'] ?? null;
@@ -317,7 +317,7 @@ class UserApiController extends Controller
             $user->email = $data['email'];
             $user->password = bcrypt($data['password']);
             $user->phone = $data['phone'];
-            $user->profile_img = "https://res-console.cloudinary.com/de0xjzms6/thumbnails/v1/image/upload/v1725364995/c3pldjZ6NnhkcGdlbGM3dXNvNjY=/drilldown";
+            $user->profile_img = "http://res.cloudinary.com/de0xjzms6/image/upload/v1727786587/d7uylxxrm9wbjey8ejqg.png";
             $user->user_type = $data['value'] ?? null;
             $user->address = $data['location'] ?? null;
             $user->address_lat = $data['locationLat'] ?? null;
@@ -450,9 +450,15 @@ class UserApiController extends Controller
             return response()->json($validator->errors());
         }
 
+        $user = User::where('email', $request->email)->first();
         if (!$token = auth()->attempt($validator->validated())) {
             return response()->json(['success' => false, 'msg' => 'Email or password is incorrect']);
         }
+        if (!$user || $user->is_verified != 1) {
+            return response()->json(['success' => false, 'msg' => 'Your account is not verified.']);
+        }
+
+
         $user = User::where('email', $request->email)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
             return ["error" => "Email or password is not matched"];
@@ -585,6 +591,10 @@ class UserApiController extends Controller
                 if ($requestDonation && $requestDonation->accept_status === 'accepted') {
                     $doneeName = User::where('id', $requestDonation->user_id)
                         ->value('name');
+                    $doneeLon = User::where('id', $requestDonation->user_id)
+                        ->value('address_lon');
+                    $doneeLat = User::where('id', $requestDonation->user_id)
+                        ->value('address_lat');
                     $donationPost = DonationPost::find($donation_id);
 
                     if ($donationPost) {
@@ -594,7 +604,9 @@ class UserApiController extends Controller
                             'donationPost' => $donationPost,
                             'imagePaths' => $imagePaths,
                             'delivery' => $requestDonation->delivery,
-                            'doneeName' => $doneeName
+                            'doneeName' => $doneeName,
+                            'doneeLon' => $doneeLon,
+                            'doneeLat' => $doneeLat,
                         ];
                     }
                 }
@@ -627,6 +639,8 @@ class UserApiController extends Controller
 
                 $UserInfo = User::find($donar_id);
                 $name = $UserInfo->name;
+                $doneeLon = User::where('id', $user_id)->value('address_lon');
+                $doneeLat = User::where('id', $user_id)->value('address_lat');
 
                 if ($donationPost) {
                     $imagePaths = DB::table('post_images')
@@ -638,6 +652,8 @@ class UserApiController extends Controller
                         'imagePaths' => $imagePaths,
                         'delivery' => $delivery,
                         'donorName' => $name,
+                        'doneeLon' => $doneeLon,
+                        'doneeLat' => $doneeLat,
                     ];
                 }
             }
@@ -836,12 +852,12 @@ class UserApiController extends Controller
             //             ->where('RequestDonation.accept_status', '!=', 'accepted');
             //     })
             //     ->get();
-   
-            $filteredDonationIds = RequestDonation::select('donation_id')
-            ->whereIn('accept_status', ['delivered', 'accepted'])
-            ->pluck('donation_id');
 
-            
+            $filteredDonationIds = RequestDonation::select('donation_id')
+                ->whereIn('accept_status', ['delivered', 'accepted'])
+                ->pluck('donation_id');
+
+
             $donationIdsWithUserIds = DonationPost::select('donation_id', 'user_id')
                 ->where('user_id', $user_id)
                 ->whereNotIn('donation_id', $filteredDonationIds)
@@ -864,7 +880,9 @@ class UserApiController extends Controller
             // $now = now()->format('d/m/Y');
             $now = now()->format('d/m/Y');
             $user_type = User::where('id', $user_id)->pluck('user_type')->first();
-            $requestDonationIds = RequestDonation::where('user_id', $user_id)->pluck('donation_id')->toArray();
+            $requestDonationIds = RequestDonation::where('user_id', $user_id)
+            
+            ->pluck('donation_id')->toArray();
             if ($user_type == 'donee') {
                 $donationIdsWithUserIds = DonationPost::select('donation_id', 'user_id')
                     ->where(function ($query) {
@@ -954,7 +972,7 @@ class UserApiController extends Controller
             });
 
             $donationPosts = DonationPost::whereIn('donation_id', $donationIds)
-                ->get(['user_id', 'donation_id']);
+                ->get(['user_id', 'donation_id', 'location_lon', 'location_lat']);
             $relatedUserIDs = $donationPosts->pluck('user_id');
 
             $donorInfoCollection = User::whereIn('id', $relatedUserIDs)->get();
@@ -965,10 +983,14 @@ class UserApiController extends Controller
 
             $response = [];
             foreach ($pendingDonations as $donation) {
+                $donationPost = $donationPosts->firstWhere('donation_id', $donation->donation_id);
                 $response[] = [
                     'doneeInfo' => $doneeInfo->get($donation->req_id, null),
                     'donorInfo' => $donorInfo->get($donation->donation_id, []),
                     'req_id' => $donation->req_id,
+                    'post_lon' => $donationPost ? $donationPost->location_lon : null,
+                    'post_lat' => $donationPost ? $donationPost->location_lat : null,
+                    'donation_id' => $donationPost ? $donationPost->donation_id : null,
                 ];
             }
 
@@ -996,8 +1018,10 @@ class UserApiController extends Controller
             });
 
             $donationPosts = DonationPost::whereIn('donation_id', $donationIds)
-                ->get(['user_id', 'donation_id']);
+                ->get(['user_id', 'donation_id', 'location_lon', 'location_lat']);
             $relatedUserIDs = $donationPosts->pluck('user_id');
+            // $post_lon = $donationPosts->pluck('location_lon');
+            // $post_lat = $donationPosts->pluck('location_lat');
 
             $donorInfoCollection = User::whereIn('id', $relatedUserIDs)->get();
             $donorInfo = $donationPosts->mapWithKeys(function ($post) use ($donorInfoCollection) {
@@ -1007,11 +1031,14 @@ class UserApiController extends Controller
 
             $response = [];
             foreach ($pendingDonations as $donation) {
+                $donationPost = $donationPosts->firstWhere('donation_id', $donation->donation_id);
                 $response[] = [
                     'doneeInfo' => $doneeInfo->get($donation->req_id, null),
                     'donorInfo' => $donorInfo->get($donation->donation_id, []),
                     'req_id' => $donation->req_id,
                     'donation_id' => $donation->donation_id,
+                    'post_lon' => $donationPost ? $donationPost->location_lon : null,
+                    'post_lat' => $donationPost ? $donationPost->location_lat : null,
                 ];
             }
 
@@ -1128,40 +1155,58 @@ class UserApiController extends Controller
 
     // Donor side Requested Post API
     public function getRequestDonations($user_id)
-    {
+    { 
+
         $donationIds = DonationPost::where('user_id', $user_id)->pluck('donation_id');
         $pendingRequests = RequestDonation::whereIn('donation_id', $donationIds)
-            ->where('accept_status', 'Pending')
-            ->get();
-
+        ->where('accept_status', 'Pending')
+        ->get();
         $pendingRequestCounts = $pendingRequests->groupBy('donation_id')->map->count();
         $pendingDonations = DonationPost::whereIn('donation_id', $pendingRequestCounts->keys())->get();
         $images = PostImage::whereIn('donation_id', $pendingRequestCounts->keys())->get(['donation_id', 'image_path']);
         $userIds = $pendingRequests->pluck('user_id')->unique();
         $users = User::whereIn('id', $userIds)->get();
-
-        $result = $pendingRequestCounts->map(function ($count, $donation_id) use ($pendingRequests, $pendingDonations, $images, $users) {
-            $requestDetails = $pendingRequests->where('donation_id', $donation_id)->first();
-            $donation = $pendingDonations->firstWhere('donation_id', $donation_id);
+        
+        $result = $pendingDonations->map(function ($donation) use ($pendingRequests, $images, $users, $pendingRequestCounts) {
+            $donation_id = $donation->donation_id;
+        
+            // Fetch all requests related to this donation
+            $relatedRequests = $pendingRequests->where('donation_id', $donation_id);
+        
+            // Fetch images for this donation
             $imagePaths = $images->where('donation_id', $donation_id)->pluck('image_path');
-            $user = $users->firstWhere('id', $requestDetails->user_id);
-
+        
+            // Map each request with its associated user and request details
+            $requests = $relatedRequests->map(function ($request) use ($users) {
+                $user = $users->firstWhere('id', $request->user_id);
+        
+                return [
+                    'req_id' => $request->req_id,
+                    'user_id' => $request->user_id,
+                    'location' => $request->location,
+                    'accept_status' => $request->accept_status,
+                    'run_status' => $request->run_status,
+                    'delivery' => $request->delivery,
+                    'user' => $user
+                ];
+            });
+        
+            // Get the pending request count for this donation
+            $pendingCount = $pendingRequestCounts->get($donation_id, 0);
+        
             return [
-                'req_id' => $requestDetails->req_id,
                 'donation_id' => $donation_id,
-                'user_id' => $requestDetails->user_id,
-                'location' => $requestDetails->location,
-                'accept_status' => $requestDetails->accept_status,
-                'run_status' => $requestDetails->run_status,
-                'delivery' => $requestDetails->delivery,
-                'user' => $user,
                 'donation_post' => $donation,
                 'image_paths' => $imagePaths,
-                'pending_count' => $count
+                'requests' => $requests, // Grouped request details under this donation
+                'pending_count' => $pendingCount // Pending count for each donation
             ];
         });
-
+        
         return response()->json($result->values());
+
+ 
+
     }
 
     public function selectRider(Request $request)
@@ -1194,65 +1239,85 @@ class UserApiController extends Controller
             $delivery_type = $request->input('deliveryType');
             $result_type = 'pickup_result';
             $donation = RequestDonation::where('donation_id', $donation_id)
-                                        ->where('user_id', $donee_id)
-                                        ->first();
+                ->where('user_id', $donee_id)
+                ->first();
             if ($donation) {
                 $donation->accept_status = 'accepted';
                 $donation->run_status = 'running';
                 $donation->save();
+
+                RequestDonation::where('donation_id', $donation_id)
+                ->where('accept_status', 'Pending')
+                ->where('user_id', '!=', $donee_id) 
+                ->delete();
             }
-            
+
             $post_location = DonationPost::where('donation_id', $donation_id)
-                ->get(['location_lon', 'location_lat']); 
+                ->get(['location_lon', 'location_lat']);
 
             $post_title = DonationPost::where('donation_id', $donation_id)
                 ->pluck('post_name')
                 ->first();
-            
+
             $notification = new Notification();
-            $notification->user_id = $donee_id ;
+            $notification->user_id = $donee_id;
             $notification->description = "Your request for {$post_title} has been accepted.";
             $notification->status = 'success';
             $notification->save();
 
+            if ($delivery_type === 'Rider') {
 
-            if ($delivery_type === 'Rider'){
-
+                // $availableRiderIds = RiderAvailability::where('availability', 'yes')->pluck('rider_id');
+                // Get available rider IDs
                 $availableRiderIds = RiderAvailability::where('availability', 'yes')->pluck('rider_id');
+                // Get rider IDs from RequestDonation table where rider_status is not 'delivered'
+                $assignedRiders = RequestDonation::whereIn('rider_id', $availableRiderIds)
+                    ->where('rider_status', '!=', 'delivered')
+                    ->pluck('rider_id');
 
-                if (!$availableRiderIds->isEmpty()) {  
-                    $riderLocations = User::whereIn('id', $availableRiderIds)
-                    ->get(['id', 'address_lon', 'address_lat']);
+                // Find all rider IDs that are either unassigned or have rider_status != 'delivered'
+                $result = $availableRiderIds->diff($assignedRiders);
+
+                // Merge the IDs that are in RequestDonation but not delivered
+                // $result = $result->merge($assignedRiders);
+
+                // return $result;
+
+
+                if (!$result->isEmpty()) {
+                    $riderLocations = User::whereIn('id', $result)
+                        ->get(['id', 'address_lon', 'address_lat']);
                     $result_type = 'delivery_result';
-                }else{
+                } else {
                     if ($donation) {
-                        $donation->delivery = 'Pickup'; 
+                        $donation->delivery = 'Pickup';
                         $donation->save();
                     }
 
                     $notification = new Notification();
-                    $notification->user_id = $donee_id ;
+                    $notification->user_id = $donee_id;
                     $notification->description = "There are no rider available for  {$post_title} now you have to pickup";
                     $notification->status = 'success';
                     $notification->save();
                 }
-
-            }   
-
-            if($result_type === 'delivery_result'){
-                return response()->json([
-                    'result_type'=>$result_type,
-                    'post_location' => $post_location,
-                    'rider_locations' => $riderLocations, 
-                ], 200);
-            }else{
-                return response()->json([
-                    'result_type'=>$result_type,
-                    'post_location' => $post_location,  
-                ], 200);
             }
 
-         
+            if ($result_type === 'delivery_result') {
+                return response()->json([
+                    // 'assigned_result_type' => $assignedRiders,
+                    // 'availableRiderIds' => $availableRiderIds,
+                    // 'result' =>$result,
+                    'result_type' => $result_type,
+                    'post_location' => $post_location,
+                    'rider_locations' => $riderLocations,
+                ], 200);
+            } else {
+                return response()->json([
+
+                    'result_type' => $result_type,
+                    'post_location' => $post_location,
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch  information'], 500);
         }
@@ -1286,24 +1351,24 @@ class UserApiController extends Controller
     public function rejectDelivery(Request $request)
     {
         try {
-            $donation_id = $request->input('donationID'); 
+            $donation_id = $request->input('donationID');
             $request_donation = RequestDonation::where('donation_id', $donation_id)
-            ->where('accept_status', 'accepted')
-            ->first();
+                ->where('accept_status', 'accepted')
+                ->first();
 
-        // Check if the request donation exists
-        if ($request_donation) {
-            // Update the necessary fields
-            $request_donation->delivery = 'Pickup';
-            $request_donation->rider_status = null;
-            $request_donation->rider_id = null;
-            $request_donation->rider_allocation = null;
+            // Check if the request donation exists
+            if ($request_donation) {
+                // Update the necessary fields
+                $request_donation->delivery = 'Pickup';
+                $request_donation->rider_status = null;
+                $request_donation->rider_id = null;
+                $request_donation->rider_allocation = null;
 
-            // Save the changes to the database
-            $request_donation->save();
+                // Save the changes to the database
+                $request_donation->save();
 
-            return response()->json(['message' => 'Delivery updated to Pickup and rider details cleared.'], 200);
-        }
+                return response()->json(['message' => 'Delivery updated to Pickup and rider details cleared.'], 200);
+            }
 
             // $post_location = DonationPost::where('donation_id', $donation_id)
             //     ->get(['location_lon', 'location_lat']);
@@ -1539,6 +1604,7 @@ class UserApiController extends Controller
 
         if ($donation) {
             $donation->accept_status = 'rejected';
+            $donation->run_status = 'canceled';
             $donation->save();
 
             $user_id = RequestDonation::where('donation_id', $donation_id)
@@ -1554,6 +1620,8 @@ class UserApiController extends Controller
             $notification->description = "Your request for {$post_title} has been rejected.";
             $notification->status = 'danger';
             $notification->save();
+
+
 
             return response()->json([
                 'success' => true,
@@ -1672,6 +1740,7 @@ class UserApiController extends Controller
 
             // Update donation status
             $donation->accept_status = 'canceled';
+            $donation->run_status = 'canceled';
             $donation->rider_id = null;
             $donation->rider_status = null;
             $donation->rider_allocation = null;
@@ -1738,9 +1807,18 @@ class UserApiController extends Controller
 
     public function cancelDoneeRequest(Request $request)
     {
+        $validated = $request->validate([
+            'donationID' => 'required|integer',
+            'user_id' => 'required|integer'
+        ]);
+    
         $donation_id = $request->input('donationID');
-        $donation = RequestDonation::where('donation_id', $donation_id)->first();
-
+        $user_id = $request->input('user_id');
+    
+        $donation = RequestDonation::where('donation_id', $donation_id)
+            ->where('user_id', $user_id)
+            ->first();
+    
         if ($donation) {
             $donation->accept_status = 'canceled';
             $donation->save();
@@ -1751,11 +1829,11 @@ class UserApiController extends Controller
         } else {
             return response()->json([
                 'success' => false,
-                'message' => $donation_id
+                'message' => 'Donation not found'
             ], 404);
         }
     }
-
+    
 
     public function deleteDonationPost(Request $request)
     {
@@ -1790,44 +1868,266 @@ class UserApiController extends Controller
     }
 
     //Acheivements' Total Donation API
-    public function getTotalDeliveredDonations()
-    { {
-            $deliveredDonations = DonationPost::selectRaw('user_id, COUNT(*) as delivered_count, SUM(serves) as total_serves')
-                ->join('donation_requests', 'donation_posts.donation_id', '=', 'donation_requests.donation_id')
-                ->where('donation_requests.run_status', 'delivered')
-                ->groupBy('user_id')
-                ->get();
+    // public function getTotalDeliveredDonations()
+    // { {
+    //         $deliveredDonations = DonationPost::selectRaw('user_id, COUNT(*) as delivered_count, SUM(serves) as total_serves')
+    //             ->join('donation_requests', 'donation_posts.donation_id', '=', 'donation_requests.donation_id')
+    //             ->where('donation_requests.run_status', 'delivered')
+    //             ->groupBy('user_id')
+    //             ->get();
 
-            return response()->json($deliveredDonations);
-        }
-    }
+    //         return response()->json($deliveredDonations);
+    //     }
+    // }
 
     public function setDeliveryType(Request $request)
     {
         try {
             $donation_id = $request->input('donationID');
-            $donee_id = $request->input('donee_id');  
+            $donee_id = $request->input('donee_id');
 
-            
+
             $donation = RequestDonation::where('donation_id', $donation_id)
-                                        ->where('user_id', $donee_id)
-                                        ->first();
-                                        if ($donation) {
-                                            $donation->delivery = 'Pickup'; 
-                                            $donation->save();
-                                        }
-             
-            
+                ->where('user_id', $donee_id)
+                ->first();
+            if ($donation) {
+                $donation->delivery = 'Pickup';
+                $donation->save();
+            }
+
+
             $notification = new Notification();
-            $notification->user_id = $donee_id ;
+            $notification->user_id = $donee_id;
             $notification->description = "No rider available You have to pickup food for yourself";
             $notification->status = 'success';
             $notification->save();
- 
-         
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch  information'], 500);
         }
     }
- 
+    public function donorHistory($user_id)
+    {
+        // Retrieve all donations for the user
+        $donations = DonationPost::where('user_id', $user_id)->get();
+
+        if ($donations->isEmpty()) {
+            return response()->json(['message' => 'No donations found for this user.'], 404);
+        }
+
+        // Extract all donation_ids from the donations collection
+        // $donation_id = $donations->pluck('donation_id');
+        // $donation_ids = RequestDonation::whereIn('donation_id', $donation_id)
+        //     ->where('accept_status', 'delivered')
+        //     ->pluck('donation_id');
+
+        // $doneeInfo = RequestDonation::whereIn('donation_id', $donation_ids)
+        //     ->join('users', 'RequestDonation.user_id', '=', 'users.id')
+        //     ->leftJoin('Rating', 'RequestDonation.req_id', '=', 'Rating.req_id')
+        //     ->select('RequestDonation.donation_id', 'users.name', 'RequestDonation.accept_status', 'RequestDonation.req_id', 'Rating.rating')
+        //     ->get();
+
+        // $doneeMap = [];
+        // foreach ($doneeInfo as $info) {
+        //     $doneeMap[$info->donation_id] = [
+        //         'name' => $info->name,
+        //         'accept_status' => $info->accept_status,
+        //         'rating' => $info->rating,
+        //     ];
+        // }
+
+        // foreach ($donations as $donation) {
+        //     $donation->donee_info = $doneeMap[$donation->donation_id] ?? null; 
+        // }
+
+        // return response()->json([
+        //     'donations' => $donations,
+        //     'donation_ids' => $donation_ids
+        // ], 200);
+
+        $donation_id = $donations->pluck('donation_id');
+        $donation_ids = RequestDonation::whereIn('donation_id', $donation_id)
+            ->where('accept_status', 'delivered')
+            ->pluck('donation_id');
+
+        $doneeInfo = RequestDonation::whereIn('donation_id', $donation_ids)
+            ->join('users', 'RequestDonation.user_id', '=', 'users.id')
+            ->leftJoin('Rating', 'RequestDonation.req_id', '=', 'Rating.req_id')
+            ->select('RequestDonation.donation_id', 'users.name', 'RequestDonation.accept_status', 'RequestDonation.req_id', 'Rating.rating')
+            ->get();
+
+        $doneeMap = [];
+        foreach ($doneeInfo as $info) {
+            $doneeMap[$info->donation_id] = [
+                'name' => $info->name,
+                'accept_status' => $info->accept_status,
+                'rating' => $info->rating,
+            ];
+        }
+
+        foreach ($donations as $donation) {
+            $donation->donee_info = $doneeMap[$donation->donation_id] ?? null;
+        }
+
+        $filteredDonations = $donations->filter(function ($donation) use ($donation_ids) {
+            return in_array($donation->donation_id, $donation_ids->toArray());
+        });
+
+        return response()->json([
+            'donations' => $filteredDonations->values(),
+        ], 200);
+    }
+
+    public function totalServes($user_id)
+    {
+        $totalServes = DonationPost::join('requestdonation', 'donation_posts.donation_id', '=', 'requestdonation.donation_id')
+            ->where('donation_posts.user_id', $user_id)
+            ->where('requestdonation.accept_status', 'delivered')
+            ->sum('donation_posts.serves');
+
+        $totalServesPeople = DonationPost::join('requestdonation', 'donation_posts.donation_id', '=', 'requestdonation.donation_id')
+            ->where('donation_posts.user_id', $user_id)
+            ->where('requestdonation.accept_status', 'delivered')
+            ->count();
+
+        return response()->json([
+            'totalServes' => $totalServes,
+            'totalServesPeople' => $totalServesPeople,
+        ]);
+    }
+    public function totalDonatedPeople($user_id)
+    {
+        $donationIds = DonationPost::where('user_id', $user_id)
+            ->pluck('donation_id');
+        $uniqueUserCount = RequestDonation::whereIn('donation_id', $donationIds)
+            ->where('accept_status', 'delivered')
+            ->distinct()
+            ->count('user_id');
+        $reqIds = RequestDonation::whereIn('donation_id', $donationIds)
+            ->where('accept_status', 'delivered')
+            ->pluck('req_id');
+        $ratings = Rating::whereIn('req_id', $reqIds)
+            ->get('rating');
+        $averageRating = $ratings->avg('rating');
+
+        $matchingCount = Rating::whereIn('req_id', $reqIds)
+            ->count();
+
+        return response()->json(['unique_user_count' => $uniqueUserCount, 'req_id' => $matchingCount, 'rating' => $averageRating]);
+    }
+
+    public function getAllRatingDetails($user_id)
+    {
+        $donationIds = DonationPost::where('user_id', $user_id)
+            ->pluck('donation_id');
+        $reqIds = RequestDonation::whereIn('donation_id', $donationIds)
+            ->where('accept_status', 'delivered')
+            ->pluck('req_id');
+        $ratings = Rating::whereIn('req_id', $reqIds)
+            ->pluck('rating');
+        $ratingCounts = $ratings->countBy();
+        $formattedResponse = [];
+        foreach ($ratingCounts as $rating => $count) {
+            $formattedResponse["rating$rating"] = $count;
+        }
+        return response()->json(['req_id' => $formattedResponse]);
+    }
+
+    public function payment(Request $request)
+    {
+        $validatedData = $request->validate([
+            'amount' => 'required|numeric',
+            'payment_method' => 'required|string',
+            'card_number' => 'sometimes|required|string',
+            'card_date' => 'sometimes|required|string',
+            'card_cvv' => 'sometimes|required|string',
+        ]);
+
+        if ($validatedData['payment_method'] === 'credit') {
+            $validCardNumber = '123456';
+            $validCardDate = '12/25';
+            $validCardCvv = '111';
+            if (
+                $validatedData['card_number'] === $validCardNumber &&
+                $validatedData['card_date'] === $validCardDate &&
+                $validatedData['card_cvv'] === $validCardCvv
+            ) {
+                return response()->json(['message' => 'Payment successful!'], 200);
+            } else {
+                return response()->json(['message' => 'Invalid card details.'], 400);
+            }
+        }
+        return response()->json(['message' => 'Payment method not supported.'], 400);
+    }
+
+    public function otp(Request $request)
+    {
+        $validatedData = $request->validate([
+            'otp' => 'required|numeric',
+        ]);
+
+        $validotp = '1234';
+        if (
+            $validatedData['otp'] === $validotp
+        ) {
+            return response()->json(['message' => 'Payment successful!'], 200);
+        } else {
+            return response()->json(['message' => 'OTP is incorrect'], 400);
+        }
+
+        return response()->json(['message' => 'Payment method not supported.'], 400);
+    }
+
+    public function bkashNumberCheck(Request $request)
+    {
+        $number = $request->input('number');
+        $rules = [
+            'number' => [
+                'required',
+                'digits:11',
+                'regex:/^01[0-9]{9}$/'
+            ],
+        ];
+
+        $customMessage = [
+            'number.required' => "Phone is required",
+            'number.digits' => 'The phone number must be exactly 11 digits.',
+            'number.regex' => 'The phone number must start with "01".',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $customMessage);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            return response()->json(['errors' => $errors], 422);
+        } else {
+            return response()->json(['success' => "Correct Number"], 200);
+        }
+    }
+    public function bkashPasswordCheck(Request $request)
+    {
+        $PIN = '12345';
+        $number = $request->input('bkashPassword');
+        $rules = [
+            'bkashPassword' => [ // Change this to 'number' to match your input.
+                'required',
+                'digits:5',
+            ],
+        ];
+
+        $customMessage = [
+            'bkashPassword.required' => "PIN is required",
+            'bkashPassword.digits' => 'The PIN must be exactly 5 digits.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $customMessage);
+        if ($validator->fails()) {
+            $errors = $validator->errors()->all();
+            return response()->json(['errors' => $errors], 422);
+        } else {
+            if ($number === $PIN) {
+                return response()->json(['success' => "Correct PIN"], 200);
+            } else {
+                return response()->json(['errors' => "Incorrect PIN"], 422);
+            }
+        }
+    }
 }

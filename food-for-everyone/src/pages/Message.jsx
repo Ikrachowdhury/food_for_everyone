@@ -1,10 +1,14 @@
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import "../assets/css/message.css"
-import { HiDotsVertical } from 'react-icons/hi';
+import userImage from '../images/avatar.png'
+// import { HiDotsVertical } from 'react-icons/hi';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { flushSync } from 'react-dom';
+// import { flushSync } from 'react-dom';
+import selectchat from '../images/selectchat.png';
+import { FaPhoneSquareAlt } from 'react-icons/fa';
+import { IoSend } from 'react-icons/io5';
 
 export default function Message() {
     const [profileData, setProfileData] = useState({});
@@ -17,178 +21,165 @@ export default function Message() {
     const [isIncomingChatHeadOpen, setIsIncomingChatHeadOpen] = useState(false);
     const [userMessage, setUserMessage] = useState('');
     // const [usermsgarray, setUsermsgarray] = useState([]);
-    const [replyId, seReplyId] = useState(0); 
+    const [replyId, seReplyId] = useState(0);
     const [msgHistory, setMsgHistory] = useState([]);
-    const user_id = localStorage.getItem('user_id'); 
-    const location = useLocation();  
-    const buttonRefs = useRef([]); 
-    // const [isMapFinished, setIsMapFinished] = useState(false);
- //chat head when comes from another page msg button
- const incomingChatHead = async () => {
-    if (location.state && Object.keys(location.state).length > 0) {
-        if (location.state.donation_id) {  
-            for (const inbox of Object.values(chatHeadInfo)) {
-                if (inbox.donation_info[0]?.donation_id === location.state.donation_id) {
-                    setMainChatBoxInfo(inbox);  
-                    break; 
+    const user_id = localStorage.getItem('user_id');
+    const location = useLocation();
+    const buttonRefs = useRef([]);
+    // const [isMapFinished, setIsMapFinished] = useState(false); 
+
+    //checks for incoming msg
+    const incomingChatHead = async () => {
+        if (location.state && Object.keys(location.state).length > 0) {
+            if (location.state.donation_id || location.state.reciever_id) {
+                console.log(location.state.donation_id)
+                for (const inbox of Object.values(chatHeadInfo)) {
+                    if (inbox.donation_info[0]?.donation_id === location.state.donation_id) {
+                        setMainChatBoxInfo(inbox);
+                        break;
+                    }
                 }
+                setIsIncomingChatHeadOpen(true);
             }
-            setIsIncomingChatHeadOpen(true);
-        } 
-    } else {
-        console.log("location.state is empty or undefined");
-    }
-};
-   useEffect(() => {
-    const autoClickHandler = async () => {
-        if (isIncomingChatHeadOpen && location.state?.donation_id) {
-            const targetDonationId = location.state.donation_id;
-
-            const matchingButtonIndex = Object.values(chatHeadInfo).findIndex(inbox => 
-                inbox.donation_info[0]?.donation_id === targetDonationId
-            );
-
-            // Log the matching index for debugging
-            console.log(`Matching button index for ID ${targetDonationId}: ${matchingButtonIndex}`);
-
-            if (matchingButtonIndex !== -1) {
-                // Ensure the button ref exists before clicking
-                if (buttonRefs.current[matchingButtonIndex]) {
-                    buttonRefs.current[matchingButtonIndex].click();
-                    console.log(`Auto-clicked the button for donation ID: ${targetDonationId}`);
-                } else {
-                    console.warn(`Button ref not found for index: ${matchingButtonIndex}`);
-                }
-            } else {
-                console.warn(`No matching button found for donation ID: ${targetDonationId}`);
-            }
+        } else {
+            console.log("location.state is empty or undefined");
         }
     };
-
-    autoClickHandler(); // Call the async function
-}, [isIncomingChatHeadOpen,chatHeadInfo]); 
-
-    //fetch ne messeges in every 2 seconds
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            fetchNewMessages();
-        }, 5000); 
-    
-        return () => clearInterval(intervalId); 
-    }, [inboxId]); 
-    
-    const fetchNewMessages = async () => {
-        if (inboxId) {
-            try {
-                const response = await fetch(`http://localhost:8000/api/getMsghistory/${inboxId}`);
-                const result = await response.json();
-                if (response.status === 200) {
-                    setMsgHistory(result.msg_history);
+        const autoClickHandler = async () => {
+            let matchingButtonIndex = null;
+            let targetDonationId = null;
+            if (isIncomingChatHeadOpen && location.state?.donation_id) {
+                // const targetDonationId = location.state.donation_id;
+                if (location.state?.reciever_id) {
+                    console.log("ok")
+                    targetDonationId = location.state?.reciever_id;
+                    matchingButtonIndex = Object.values(chatHeadInfo).findIndex(inbox =>
+                        inbox.reciever_info[0]?.id === targetDonationId
+                    );
                 } else {
-                    console.log("Failed to load message history");
+                    targetDonationId = location.state?.donation_id;
+                    matchingButtonIndex = Object.values(chatHeadInfo).findIndex(inbox =>
+                        inbox.donation_info[0]?.donation_id === targetDonationId
+                    );
                 }
-            } catch (error) {
-                console.error("Error fetching message history:", error);
+
+                console.log(`Matching button index for ID ${targetDonationId}: ${matchingButtonIndex}`);
+                if (matchingButtonIndex !== -1) {
+                    if (buttonRefs.current[matchingButtonIndex]) {
+                        buttonRefs.current[matchingButtonIndex].click();
+                        console.log(`Auto-clicked the button for donation ID: ${targetDonationId}`);
+                    } else {
+                        console.warn(`Button ref not found for index: ${matchingButtonIndex}`);
+                    }
+                } else {
+                    console.warn(`No matching button found for donation ID: ${targetDonationId}`);
+                }
             }
-        }
-    };
-   //get all iboxes for the user id 
+        };
+
+        autoClickHandler();
+    }, [isIncomingChatHeadOpen, chatHeadInfo]);
+    //get all iboxes for the user id 
+    //then gets all chat head from every inbox
     useEffect(() => {
         const fetchInboxes = async () => {
-            try {  
-                const response = await fetch(`http://localhost:8000/api/getAllInboxes/${user_id}`); // Replace 8 
+            try {
+                const response = await fetch(`http://localhost:8000/api/getAllInboxes/${user_id}`);
                 const result = await response.json();
-
+                console.log("result    " + result.inboxes);
                 if (response.status === 200) {
                     setInboxes(result.inboxes);
+                    if (result.inboxes.length > 0) {
+                        console.log("inbox > 0");
+                        fetchChatHeadInfoFromInboxes(result.inboxes);
+                    }
                 } else {
                     console.log("Failed to load inboxes");
-                } 
-                const response2 = await fetch(`http://localhost:8000/api/profile/${user_id}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
                 }
-                const result2 = await response2.json();
-                setProfileData(result2); 
-                
             } catch (error) {
                 console.error("Error fetching inboxes:", error);
             }
         };
-        fetchInboxes();
+        const fetchChatHeadInfoFromInboxes = async (Inboxes) => {
 
-    }, []);
-   //for everyinbox get the value of the inbox and sets chatheadinfo
-    useEffect(() => {
-        const fetchChatHeadInfoFromInboxes = async () => { 
-            if (inboxes.length > 0) {
-                inboxes.forEach(async (inbox) => {
-                    try {
-                        let reciver_id = null;
-                        if(inbox.reciever_id==user_id){
-                            reciver_id = inbox.doner_id
-                            // console.log(reciver_id+" user to donor")
-                        }else{
-                            reciver_id =inbox.reciever_id
-                            // console.log(reciver_id+"Donee")
-                        }
-                        const response2 = await fetch(`http://localhost:8000/api/getChatHeaadInfo/${inbox.donation_id}/${reciver_id}`, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                            },
-                        });
-                        const data = await response2.json();
- 
-                        setChatHeadInfo(prevState => ({
-                            ...prevState,
-                            [inbox.inbox_id]: {
-                                ...data,  
-                                inbox_id: inbox.inbox_id ,
-                                masg_type:inbox.masg_type,
-                            },
-                        }));
-                    } catch (error) {
-                        console.error("Error fetching chat head info:", error);
+            Inboxes.forEach(async (inbox) => {
+                try {
+                    let reciver_id = null;
+                    if (inbox.reciever_id == user_id) {
+                        reciver_id = inbox.doner_id
+                        // console.log(reciver_id+" user to donor")
+                    } else {
+                        reciver_id = inbox.reciever_id
+                        // console.log(reciver_id+"Donee")
                     }
-                });
-                incomingChatHead();
-            }
+                    // console.log("inbox id "+inbox.inbox_id  )
+                    const response2 = await fetch(`http://localhost:8000/api/getChatHeaadInfo/${inbox.donation_id}/${reciver_id}`, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                    });
+                    const data = await response2.json();
+
+                    setChatHeadInfo(prevState => ({
+                        ...prevState,
+                        [inbox.inbox_id]: {
+                            ...data,
+                            inbox_id: inbox.inbox_id,
+                            masg_type: inbox.masg_type,
+                        },
+                    }));
+                } catch (error) {
+                    console.error("Error fetching chat head info:", error);
+                }
+            });
 
         }
-        fetchChatHeadInfoFromInboxes();
-    }, [inboxes]);
-//after clicking chathead sets the main chatbox
-const setMainChatBoxInfo = async (inbox) => { 
-        setMsgHistory([]); 
+        fetchInboxes();
+        incomingChatHead();
+
+    }, []);
+    //user profile 
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const response2 = await fetch(`http://localhost:8000/api/profile/${user_id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+            });
+            if (!response2.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const result2 = await response2.json();
+            setProfileData(result2);
+        }
+        fetchProfile();
+    }, []);
+    //after clicking chathead sets the main chatbox
+    const setMainChatBoxInfo = async (inbox) => {
+        setMsgHistory([]);
         setInboxId(inbox.inbox_id);
         setDonationId(inbox.donation_info[0]?.donation_id);
-        setMasgType(inbox.masg_type); 
+        setMasgType(inbox.masg_type);
         setIsChatHeadOpen(true);
-   
-    await fetchMessageHistory(inbox.inbox_id);
-};
-useEffect(() => {
-    if (isChatHeadOpen) {   
-    }
-}, [isChatHeadOpen]); 
 
+        await fetchMessageHistory(inbox.inbox_id);
+    };
+    useEffect(() => {
+        if (isChatHeadOpen) {
+        }
+    }, [isChatHeadOpen]);
     const handleInputChange = (e) => {
         setUserMessage(e.target.value);
     };
-
     const handleSendClick = async (replyId) => {
         console.log('Message:', userMessage);
-        if (userMessage.trim()) { 
-        
+        if (userMessage.trim()) {
+
             const formData = new FormData();
             formData.append("inbox_id", inboxId);
             formData.append("reply_id", replyId);
@@ -207,7 +198,29 @@ useEffect(() => {
             setUserMessage('');
         }
     };
+    //get msg history every 5 seconds
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            fetchNewMessages();
+        }, 5000);
 
+        return () => clearInterval(intervalId);
+    }, [inboxId]);
+    const fetchNewMessages = async () => {
+        if (inboxId) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/getMsghistory/${inboxId}`);
+                const result = await response.json();
+                if (response.status === 200) {
+                    setMsgHistory(result.msg_history);
+                } else {
+                    console.log("Failed to load message history");
+                }
+            } catch (error) {
+                console.error("Error fetching message history:", error);
+            }
+        }
+    };
     const fetchMessageHistory = async (inboxId) => {
         try {
             const response = await fetch(`http://localhost:8000/api/getMsghistory/${inboxId}`);
@@ -233,83 +246,99 @@ useEffect(() => {
                                 <div className="col-md-4 border-right" style={{ height: '92vh', overflowY: 'auto' }}>
                                     <div className="settings-tray d-flex justify-content-between align-items-center">
                                         <div className='d-flex align-items-center'>
-                                            <img className="profile-image" src={ Object.keys(profileData).length > 0 ?  profileData.user?.profile_image:null} alt="Profile img" />
-                                            <h6 className='ms-2 mb-0 fw-bold'>{ Object.keys(profileData).length > 0 ?  profileData.user?.name:null}</h6>
+                                            <img className="profile-image" src={Object.keys(profileData).length > 0 ? profileData.user?.profile_img : userImage} alt="Profile img" />
+                                            <h6 className='ms-2 mb-0 fw-bold'>{Object.keys(profileData).length > 0 ? profileData.user?.name : null}</h6>
                                         </div>
                                     </div>
 
                                     {Object.values(chatHeadInfo).map((inbox, index) => (
                                         <div key={index}>
-                                            <div className="friend-drawer friend-drawer--onhover">
-                                                <button   ref={(el) => (buttonRefs.current[index] = el)} // Store the button ref in an array
-                            onClick={() => setMainChatBoxInfo(inbox)}>
-                                                    <div className="text">
-                                                        <h6>{inbox.reciever_info[0]?.user_type}: {inbox.reciever_info[0]?.name}</h6>
-                                                        <p className="text-muted">{inbox.donation_info[0]?.post_name}</p>
-                                                    </div>
-                                                    <span className="time text-muted small">{inbox.reciever_info[0]?.phone}</span>
-                                                </button>
+                                            <div className="drawer-friend friend-drawer--onhover pb-0">
+                                                <ul className="list-unstyled mb-0">
+                                                    <li ref={(el) => (buttonRefs.current[index] = el)}
+                                                        onClick={() => setMainChatBoxInfo(inbox)}
+                                                        className="friend-drawer list-drawer--onhover d-flex align-items-center px-3 me-2 listItem"
+                                                        style={{ cursor: 'pointer' }}>
+                                                        <img className="profile-image" src={inbox.reciever_info[0]?.profile_img ? inbox.reciever_info[0].profile_img : userImage} alt={`${inbox.reciever_info[0]?.name}'s profile`} />
+                                                        <div className="text d-flex flex-column justify-content-center" style={{ height: '100%' }}>
+                                                            <h6 className='mx-1'>{inbox.reciever_info[0]?.user_type}: {inbox.reciever_info[0]?.name}</h6>
+                                                            <h6 className="text-muted m-1">
+                                                                {masgType === "onRun" ? inbox.donation_info[0]?.post_name : masgType}
+                                                            </h6>
+
+                                                        </div>
+                                                    </li>
+                                                </ul>
+
+
                                             </div>
                                             <hr className='messageHR' />
                                         </div>
                                     ))}
                                 </div>
                                 {/* start of Chat box section */}
-{isChatHeadOpen || isIncomingChatHeadOpen? (
-    <div className="col-md-8" style={{ height: '92vh', display: 'flex', flexDirection: 'column' }}>
-        <div className="settings-tray">
-            {Object.values(chatHeadInfo).map((inbox, index) => (
-                inbox.inbox_id == inboxId ? (
-                    <div key={index} className="friend-drawer list-drawer--onhover">
-                        <img className="profile-image" src={inbox.donation_info[0]?.profile_photo_url} alt={`${inbox.reciever_info[0]?.name}'s profile`} />
-                        <div className="text">
-                            <h6>{inbox.reciever_info[0]?.name}</h6>
-                            <p className="text-muted">  {masgType === "onRun" ? inbox.donation_info[0]?.post_name : masgType}</p>
-                        </div>
-                    </div>
-                ) : null
-            ))}
-        </div>
+                                {isChatHeadOpen || isIncomingChatHeadOpen ? (
+                                    <div className="col-md-8" style={{ height: '92vh', display: 'flex', flexDirection: 'column' }}>
+                                        <div className="settings-tray p-0" >
+                                            {Object.values(chatHeadInfo).map((inbox, index) => (
+                                                inbox.inbox_id == inboxId ? (
+                                                    <div key={index} className="friend-drawer list-drawer--onhover d-flex align-items-center" style={{ backgroundColor: "#eee", width: "100%" }}>
+                                                        <img className="profile-image" src={inbox.reciever_info[0]?.profile_img ? inbox.reciever_info[0].profile_img : userImage}  alt={`${inbox.reciever_info[0]?.name}'s profile`} />
+                                                        <div className="text d-flex flex-column justify-content-center flex-grow-1" style={{ height: '100%' }}>
+                                                            <div className='d-flex justify-content-between align-items-center'>
+                                                                <h6 className='m-0'>{inbox.reciever_info[0]?.name}</h6>
+                                                            </div>
+                                                            <div className='d-flex justify-content-between align-items-center'>
+                                                                <h6 className="text-muted m-0">
+                                                                    {masgType === "onRun" ? inbox.donation_info[0]?.post_name : masgType}
+                                                                </h6>
+                                                                <h6 className="time text-muted m-1 me-3">
+                                                                    <FaPhoneSquareAlt style={{ color: "green", fontSize: "1.5rem" }} /> {inbox.reciever_info[0]?.phone}
+                                                                </h6>
+                                                            </div>
 
-        <div className="chat-panel" style={{ flex: '1', overflowY: 'auto', overflowX: 'hidden' }}>
-            {msgHistory.map((msg, index) => (
-                <div className="row no-gutters" key={index}>
-                    <div className={`col-md-3 ${msg.msg_sender_id == user_id ? 'offset-md-9' : ''}`}>
-                        <div className={`chat-bubble ${msg.msg_sender_id == user_id ? 'chat-bubble--right' : 'chat-bubble--left'}`}>
-                            {msg.msg}
-                        </div>
-                    </div>
-                </div>
-            ))}
-            {/* {usermsgarray.map((msg, index) => (
-                <div className="row no-gutters" key={index}>
-                    <div className="col-md-3 offset-md-9">
-                        <div className="chat-bubble chat-bubble--right">
-                            {msg}
-                        </div>
-                    </div>
-                </div>
-            ))} */}
-        </div>
+                                                        </div>
+                                                    </div>
 
-        <div className="chat-box-tray">
-            <input
-                type="text"
-                placeholder="Type your message here..."
-                className='pl-3 messageInput'
-                value={userMessage}
-                onChange={handleInputChange}
-            />
-            <button className='send-Button' onClick={() => handleSendClick(replyId)}>Send</button>
-        </div>
-    </div>
-) : (
-    <div className="col-md-5" style={{ display: 'flex', height: '95vh' }}> 
-    <div className="number">Please select a chat</div>
 
-</div>
-)}
-{/* end */}
+                                                ) : null
+                                            ))}
+                                        </div>
+
+                                        <div className="chat-panel" style={{ flex: '1', overflowY: 'auto', overflowX: 'hidden' }}>
+                                            {msgHistory.map((msg, index) => (
+                                                <div className="row no-gutters" key={index}>
+                                                    <div className={`col-md-3 ${msg.msg_sender_id == user_id ? 'offset-md-9' : ''}`}>
+                                                        <div className={`chat-bubble ${msg.msg_sender_id == user_id ? 'chat-bubble--right' : 'chat-bubble--left'}`}>
+                                                            {msg.msg}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="chat-box-tray">
+                                            <input
+                                                type="text"
+                                                placeholder="Type your message here..."
+                                                className='pl-3 messageInput'
+                                                value={userMessage}
+                                                onChange={handleInputChange}
+                                            />
+                                            <button onClick={() => handleSendClick(replyId)}><IoSend style={{ fontSize: "1.8rem" }} /></button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="col-md-5 d-flex flex-column justify-content-center align-items-center" style={{ height: '95vh', marginLeft: "200px" }}>
+                                        <div>
+                                            <img src={selectchat} alt="" style={{ width: "auto", height: "400px" }} />
+                                        </div>
+                                        <div>
+                                            <div><h1>Please select a chat</h1></div>
+                                        </div>
+                                        {/* <div className="number">Please select a chat</div> */}
+                                    </div>
+                                )}
+                                {/* end */}
 
                             </div>
 

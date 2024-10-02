@@ -10,7 +10,8 @@ const Home = () => {
     const user_type = localStorage.getItem('user_type');
     const navigate = useNavigate();
     const handleNavigation = (event, card) => {
-        if (user_type && user_type === card.value) {
+        if (user_type) {
+        // if (user_type && user_type === card.value) {
             event.preventDefault();
             if (user_type === 'donor') {
                 navigate("/dashboard");

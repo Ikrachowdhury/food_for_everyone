@@ -47,6 +47,11 @@ export default function ReceiverDashboard() {
 
     const handleRequestClick = (donationId) => {
         setSelectedDonationId(donationId);
+        const modalElement = document.getElementById('detailsModal');
+        const modal =  window.bootstrap.Modal.getInstance(modalElement); // Get the modal instance
+        if (modal) {
+            modal.hide(); // Hide the modal
+        }
     };
     const handleDeliveryChange = (e) => {
         setDelivery(e.target.value);

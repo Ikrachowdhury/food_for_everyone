@@ -1,16 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar'
 import Navbar from '../../components/Navbar';
-const TableData = [
-    { id: 2, postName: 'Post 2', postDate: '13/4/24', quantity: '10', status: 'Delivered', donee: 'Abc', location: 'Sonapur', deliveryData: '13/2/4', rating: '3' },
-    { id: 3, postName: 'Post 3', postDate: '14/4/24', quantity: '10', status: 'Expired', donee: 'Defy', location: 'Maijdee', deliveryData: '13/2/4', rating: '5' },
-    { id: 1, postName: 'Post 1', postDate: '12/4/24', quantity: '10', status: 'Canceled', donee: 'Ghizz', location: 'Biswanath', deliveryData: '13/2/4', rating: '1' },
-    { id: 4, postName: 'Post 4', postDate: '15/4/24', quantity: '10', status: 'Delivered', donee: 'Jklmn', location: 'Garage', deliveryData: '13/2/4', rating: '4' },
-    { id: 5, postName: 'Post 5', postDate: '16/4/24', quantity: '10', status: 'Delivered', donee: 'Opqr', location: 'Town Hall', deliveryData: '13/2/4', rating: '2' },
-    { id: 6, postName: 'Post 6', postDate: '17/4/24', quantity: '10', status: 'Canceled', donee: 'Stuvwx', location: 'Rashid Colony', deliveryData: '13/2/4', rating: '3' },
-]
+
 export default function History() {
     const [queries, setQueries] = useState("");
+    const [historyData, setHistoryData] = useState("");
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const user_id = localStorage.getItem('user_id');
+                console.log(user_id)
+                const response = await fetch(`http://localhost:8000/api/donorHistory/${user_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const result = await response.json();
+                setHistoryData(result.donations)
+                console.log(result.donations)
+            } catch (error) {
+                console.log(error)
+            }
+        };
+        fetchData();
+    }, []);
     return (
         <div>
             <Navbar />
@@ -32,72 +52,84 @@ export default function History() {
                                 />
                             </div>
                         </section>
-                        <section className="table__body">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th className="min-w-100px text-center"> ID </th>
-                                        <th className="min-w-100px text-center"> Post Name </th>
-                                        <th className="min-w-100px text-center"> Post Date </th>
-                                        <th className="min-w-100px text-center"> Serves </th>
-                                        <th className="min-w-100px text-center"> Status </th>
-                                        <th className="min-w-100px text-center"> Donee </th>
-                                        <th className="min-w-100px text-center"> Location </th>
-                                        <th className="min-w-100px text-center"> Delivery Date </th>
-                                        <th className="min-w-100px text-center"> Rating </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {TableData.filter((doneelist) =>
-                                        Object.values(doneelist).some(
-                                            (field) =>
-                                                typeof field === 'string' && field.toLowerCase().includes(queries.toLowerCase())
-                                        )
-                                    ).map(order => (
-                                        <tr key={order.id} >
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.id}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle', fontSize: '17px' }}>{order.postName}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.postDate}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.quantity}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.status}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.donee}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.location}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.deliveryData}</td>
-                                            <td className="text-center" style={{ verticalAlign: 'middle' }}>{order.rating}/5</td>
+                        {historyData.length > 0 ? (
+                            <section className="table__body">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th className="min-w-100px text-center"> ID </th>
+                                            <th className="min-w-100px text-center"> Post Name </th>
+                                            <th className="min-w-100px text-center"> Expire Date </th>
+                                            <th className="min-w-100px text-center"> Serves </th>
+                                            <th className="min-w-100px text-center"> Status </th>
+                                            <th className="min-w-100px text-center"> Donee </th>
+                                            <th className="min-w-100px text-center"> Location </th>
+                                            <th className="min-w-100px text-center"> Rating </th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                <div className="modal-dialog modal-dialog-centered" role="document">
-                                    <div className="modal-content">
-                                        <div className="modal-header">
-                                            <h5 className="modal-title" id="exampleModalLongTitle">Rating</h5>
-                                            <button type="button" className="close text-danger" data-bs-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div className="modal-body">
-                                            <div className="receivedrating">
-                                                <input type="radio" name="receivedrating" id="r1" />
-                                                <label htmlFor="r1"></label>
-                                                <input type="radio" name="receivedrating" id="r2" />
-                                                <label htmlFor="r2"></label>
-                                                <input type="radio" name="receivedrating" id="r3" />
-                                                <label htmlFor="r3"></label>
-                                                <input type="radio" name="receivedrating" id="r4" />
-                                                <label htmlFor="r4"></label>
-                                                <input type="radio" name="receivedrating" id="r5" />
-                                                <label htmlFor="r5"></label>
+                                    </thead>
+                                    <tbody>
+                                        {historyData.filter((data) => {
+                                            const values = Object.values(data).flatMap(field => {
+                                                if (typeof field === 'object' && field !== null) {
+                                                    return Object.values(field).filter(innerField => typeof innerField === 'string');
+                                                }
+                                                return typeof field === 'string' ? field : [];
+                                            });
+
+                                            return values.some(field => field.toLowerCase().includes(queries.toLowerCase()));
+                                        }).map((data, index) => (
+                                            <tr key={data.donation_id}>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{index + 1}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle', fontSize: '17px' }}>{data.post_name}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.expiredate}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.serves}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.donee_info ? data.donee_info.accept_status : ''}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.donee_info ? data.donee_info.name : ''}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.pickup_location}</td>
+                                                <td className="text-center" style={{ verticalAlign: 'middle' }}>{data.donee_info ? data.donee_info.rating : ''}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                    <div className="modal-dialog modal-dialog-centered" role="document">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <h5 className="modal-title" id="exampleModalLongTitle">Rating</h5>
+                                                <button type="button" className="close text-danger" data-bs-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
                                             </div>
-                                        </div>
-                                        <div className="modal-footer">
-                                            <button type="button" className="btn btn-primary">Submit</button>
+                                            <div className="modal-body">
+                                                <div className="receivedrating">
+                                                    <input type="radio" name="receivedrating" id="r1" />
+                                                    <label htmlFor="r1"></label>
+                                                    <input type="radio" name="receivedrating" id="r2" />
+                                                    <label htmlFor="r2"></label>
+                                                    <input type="radio" name="receivedrating" id="r3" />
+                                                    <label htmlFor="r3"></label>
+                                                    <input type="radio" name="receivedrating" id="r4" />
+                                                    <label htmlFor="r4"></label>
+                                                    <input type="radio" name="receivedrating" id="r5" />
+                                                    <label htmlFor="r5"></label>
+                                                </div>
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button type="button" className="btn btn-primary">Submit</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </section>
+                        ) : (
+                            <div className="centered-content">
+                                <div className="text">
+                                    <span>Ooops...</span>
+                                </div>
+                                <div className="MainMessage">No  History</div>
                             </div>
-                        </section>
+                        )}
                     </main>
                 </div>
             </div>

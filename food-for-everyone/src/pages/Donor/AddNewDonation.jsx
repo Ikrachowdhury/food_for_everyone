@@ -35,7 +35,6 @@ export default function AddNewDonation() {
     const formattedReceiveDate = selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '';
     const locations = useLocation();
     const { donations } = locations.state || {};
-    // const [urlArray, setUrlArray] = useState([]);
     const [map, setMap] = useState(null);
     const [defaultLocation, setDefaultLocation] = useState(null);
     const [clickedLocation, setClickedLocation] = useState(null);
@@ -43,15 +42,12 @@ export default function AddNewDonation() {
     const [locationLon, setLocationLon] = useState("");
     const [location, setLocation] = useState('');
     const [placeInfo, setPlaceInfo] = useState('');
-    // const [editFilteredUrls, setEditFilteredUrls] = useState([]);
     const [previousUrls, setPreviousUrls] = useState([]);
     const [warning, setWarning] = useState('');
     const [warningLastReceiveTime, setWarningLastReceiveTime] = useState('');
-    // const [concatenatedUrls, setConcatenatedUrls] = useState([]);
-    // let editFilteredUrls = [];
-
-    // console.log(donations)
-    // console.log(locationLon)
+    const okButton = () => {
+        navigate("/dashboard")
+    }
     const handleDateChange = (date) => {
         setExpireTime(date);
         if (date && date < new Date()) {
@@ -187,13 +183,13 @@ export default function AddNewDonation() {
         setDoneeType(e.target.value);
     };
     const handleCategoriesChange = (e) => {
+        console.log(e.target.value)
         setCategories(e.target.value);
     };
 
     const [profileImages, setProfileImages] = useState([null, null, null, null]);
 
     const handleImageChange = (e, index) => {
-        // console.log(e.target.files[0])
         const files = [...profileImages];
         files[index] = e.target.files[0];
         console.log(e.target.files[0]);
@@ -206,7 +202,6 @@ export default function AddNewDonation() {
             updatedUrls[0] = null;
             setPreviousUrls(updatedUrls);
         }
-        // updateUrlArray();
     };
     const handleRemoveImage2 = () => {
         setImage2(null);
@@ -215,7 +210,6 @@ export default function AddNewDonation() {
             updatedUrls[1] = null;
             setPreviousUrls(updatedUrls);
         }
-        // updateUrlArray();
     };
 
     const handleRemoveImage3 = () => {
@@ -227,7 +221,6 @@ export default function AddNewDonation() {
                 setPreviousUrls(updatedUrls);
             }
         }
-        // updateUrlArray();
     };
 
     const handleRemoveImage4 = () => {
@@ -237,16 +230,7 @@ export default function AddNewDonation() {
             updatedUrls[3] = null;
             setPreviousUrls(updatedUrls);
         }
-
-        // updateUrlArray();
     };
-
-    // const updateConcatenatedUrls = () => {
-    //     const nonEmptyEditUrls = editFilteredUrls.filter(url => url !== "");
-    //     const combinedUrls = filteredUrls.concat(nonEmptyEditUrls);
-    //     setConcatenatedUrls(combinedUrls);
-    //     console.log('Concatenated URLs:', combinedUrls);
-    // };
 
     useEffect(() => {
         if (donations) {
@@ -279,6 +263,7 @@ export default function AddNewDonation() {
 
     async function newDonation(event) {
         event.preventDefault();
+       
         try {
             const uploadedUrls = await Promise.all(profileImages.map(async (image) => {
                 if (
@@ -305,30 +290,13 @@ export default function AddNewDonation() {
                 }
                 return null;
             }));
-
-            // const filteredUrls = uploadedUrls.filter(url => url !== null);
-            // const mergedUrls = [
-            //     ...previousUrls,
-            //     ...filteredUrls
-            // ].filter((url, index, self) => self.indexOf(url) === index);
             const filteredUrls = uploadedUrls.filter(url => url !== null);
-
-            // Remove null values from previousUrls
             const cleanedPreviousUrls = previousUrls.filter(url => url !== null);
-
-            // Merge cleaned previousUrls with filteredUrls and remove duplicates
             const mergedUrls = [
                 ...cleanedPreviousUrls,
                 ...filteredUrls
             ].filter((url, index, self) => self.indexOf(url) === index);
-
-            // console.log('Merged URLs:', mergedUrls);
-
-
-            // console.log(mergedUrls)
             setProfileImages([null, null, null, null]);
-
-            // console.log('URL in  form:', urlArray);
             const formData = new FormData();
             formData.append('donation_id', donationID)
             formData.append('user_id', userId);
@@ -362,12 +330,10 @@ export default function AddNewDonation() {
                 console.error('Validation Errors:', errorData.errors);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            // if (!response.ok) {
-            //     throw new Error(`HTTP error! Status: ${response.status}`);
-            // }
             let result = await response.json();
+            const modalElement = new window.bootstrap.Modal(document.getElementById('ConfirmModal'));
+            modalElement.show();
             console.log("Result:", result);
-            navigate("/dashboard")
         } catch (error) {
             console.error('Error:', error);
         }
@@ -383,7 +349,7 @@ export default function AddNewDonation() {
                             <div>
                                 <form onSubmit={newDonation}>
                                     <div className='d-flex justify-content-between'>
-                                        <h5 className=' fw-bold'><FaBoxesPacking /> Add New Donation</h5>
+                                        <h5 className=' fw-bold mx-2'><FaBoxesPacking className='mx-2' /> Add New Donation</h5>
                                         <button type="submit" className='donateButton' value="Submit">
                                             {donations ? ("✓ Save Changes ") : ("✓ Add Donation ")}
                                         </button>
@@ -409,7 +375,7 @@ export default function AddNewDonation() {
                                                         </div>
                                                         <div className="col">
                                                             <label htmlFor="donee" className="form-label mt-2 ">Donee <span className="text-danger">*</span></label>
-                                                            <select className="form-control textBox" id="donee" value={donations?.donationPost?.pickup_location || doneeType} onChange={handleDoneeTypeChange}>
+                                                            <select className="form-control textBox" id="donee" value={doneeType} onChange={handleDoneeTypeChange}>
                                                                 <option>Organization</option>
                                                                 <option>Individual Person</option>
                                                                 <option>Anyone</option>
@@ -445,9 +411,6 @@ export default function AddNewDonation() {
                                                                 {
                                                                     image1 ?
                                                                         <button className='btn btn-danger mb-3 w-100' onClick={handleRemoveImage1}>Remove</button>
-                                                                        // <button className='btn btn-danger mb-3 w-100' onClick={() => {
-                                                                        //     setImage1(null)
-                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -461,14 +424,8 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field2' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        // if (donations&& donations.imagePaths[1]!=null) {
-                                                                        //     setImage2(donations.imagePaths[1]);
-                                                                        // } else {
                                                                         setImage2(URL.createObjectURL(files[0]));
                                                                         handleImageChange(e, 1);
-                                                                        // }
-                                                                        // setImage2(URL.createObjectURL(files[0]));
-
                                                                     }
                                                                 }} />
                                                                 {
@@ -484,9 +441,6 @@ export default function AddNewDonation() {
                                                                 {
                                                                     image2 ?
                                                                         <button className='btn btn-danger mb-3 w-100' onClick={handleRemoveImage2}>Remove</button>
-                                                                        // <button className='btn btn-danger mb-3 w-100' onClick={() => {
-                                                                        //     setImage2(null)
-                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -498,12 +452,8 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field3' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        // if (donations && donations.imagePaths[2]!=null) {
-                                                                        //     setImage3(donations.imagePaths[2]);
-                                                                        // } else {
                                                                         setImage3(URL.createObjectURL(files[0]));
                                                                         handleImageChange(e, 2);
-                                                                        // }
                                                                     }
                                                                 }} />
                                                                 {
@@ -520,9 +470,6 @@ export default function AddNewDonation() {
                                                                 {
                                                                     image3 ?
                                                                         <button className='btn btn-danger mb-3 w-100' onClick={handleRemoveImage3}>Remove</button>
-                                                                        // <button className='btn btn-danger mb-3 w-100' onClick={() => {
-                                                                        //     setImage3(null)
-                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -534,12 +481,8 @@ export default function AddNewDonation() {
                                                                 <input type="file" accept="image/*" className='input-field4' hidden onChange={(e) => {
                                                                     const { files } = e.target;
                                                                     if (files && files[0]) {
-                                                                        // if (donations && donations.imagePaths[3]!=null) {
-                                                                        //     setImage4(donations.imagePaths[3]);
-                                                                        // } else {
                                                                         setImage4(URL.createObjectURL(files[0]));
                                                                         handleImageChange(e, 3);
-                                                                        // }
                                                                     }
                                                                 }} />
                                                                 {
@@ -556,9 +499,6 @@ export default function AddNewDonation() {
                                                                 {
                                                                     image4 ?
                                                                         <button className='btn mb-3 w-100 btn-danger' onClick={handleRemoveImage4}>Remove</button>
-                                                                        // <button className='btn mb-3 w-100 btn-danger' onClick={() => {
-                                                                        //     setImage4(null)
-                                                                        // }}>Remove</button>
                                                                         : ""
                                                                 }
                                                             </div>
@@ -579,7 +519,7 @@ export default function AddNewDonation() {
                                                         <div className="col">
                                                             <label htmlFor="expireTime" className="form-label mt-2">Expire Date <span className="text-danger">*</span></label>
                                                             <div className="input-group">
-                                                                
+
                                                                 <DatePicker
                                                                     ref={datePickerRef}
                                                                     wrapperClassName="datepicker"
@@ -601,7 +541,6 @@ export default function AddNewDonation() {
                                                                 {warningLastReceiveTime && <div className="warning text-danger mt-2">{warningLastReceiveTime}</div>}
                                                             </div>
                                                         </div>
-
                                                     </div>
                                                 </div>
                                             </div>
@@ -609,7 +548,7 @@ export default function AddNewDonation() {
                                                 <h5 className='mb-0'>Category and Location</h5>
                                                 <div className="my-3">
                                                     <label htmlFor="category" className="form-label mt-2 ">Category <span className="text-danger">*</span></label>
-                                                    <select className="form-control textBox" id="category" value={donations?.donationPost?.pickup_location || categories} onChange={handleCategoriesChange}>
+                                                    <select className="form-control textBox" id="category" value={categories} onChange={handleCategoriesChange}>
                                                         <option>Cooked Food</option>
                                                         <option>Readymade Food</option>
                                                         <option>UnCooked Food</option>
@@ -621,8 +560,6 @@ export default function AddNewDonation() {
                                                         const modalElement = new window.bootstrap.Modal(document.getElementById('staticBackdrop'));
                                                         modalElement.show();
                                                     }} />
-
-
                                                 </div>
                                             </div>
                                             <div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -654,6 +591,23 @@ export default function AddNewDonation() {
 
                                     </div>
                                 </form>
+                                <div className="modal fade " id="ConfirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                    <div className="modal-dialog modal-dialog-centered">
+                                        <div className="modal-content">
+                                            <div className="modal-header">
+                                                <strong className="me-auto text-success">Success</strong>
+                                            </div>
+                                            <div className="modal-body">
+                                                <div className="mb-3 mt-2 ">
+                                                    New Donation Post Successful
+                                                </div>
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button type="button" className='btn-success' data-bs-dismiss="modal" aria-label="Close" onClick={okButton} >Ok</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </section>
                     </div>

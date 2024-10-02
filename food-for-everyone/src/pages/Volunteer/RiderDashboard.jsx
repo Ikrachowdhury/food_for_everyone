@@ -30,16 +30,16 @@ export default function RiderDashboard() {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    const handleContactButtonClick = (reciever_id) => { 
-        navigate('/message');
+    const handleContactButtonClick = (donation_id, reciever_id) => { 
+        navigate('/message', { state: { reciever_id , donation_id} });
       };
     if (count === 0) {
         setCount(1);
         handleAvailability("no");
     }
 
-    const handleShowMapModal = (donor, donee) => {
-        const origin = [donor.address_lon, donor.address_lat];
+    const handleShowMapModal = (post_lon,post_lat, donee) => {
+        const origin = [post_lon, post_lat];
         const destination = [donee.address_lon, donee.address_lat];
         console.log('Setting mapData:', { origin, destination });
         setMapData({
@@ -47,8 +47,6 @@ export default function RiderDashboard() {
             destination,
         });
     };
-    // const [isData, setIsData] = useState(false);
-
 
     useEffect(() => {
         const modalElement = document.getElementById('mapModal');
@@ -57,11 +55,6 @@ export default function RiderDashboard() {
                 console.error("Map container is not available.");
                 return;
             }
-            // if (map.current) {
-            //     map.current.remove();
-            //     map.current = null;
-            // }
-
             console.log("Initializing map...");
             map.current = new mapboxgl.Map({
                 container: mapContainer.current,
@@ -69,9 +62,6 @@ export default function RiderDashboard() {
                 center: mapData.origin,
                 zoom: 10,
             });
-
-            // const origin = [91.81387, 22.33807];
-            // const destination = [91.81956, 22.33589];
 
             const directions = new MapboxDirections({
                 accessToken: mapboxgl.accessToken,
@@ -84,12 +74,6 @@ export default function RiderDashboard() {
             });
 
             map.current.addControl(directions, 'top-left');
-
-            // map.current.on('load', () => {
-            //     console.log("Map loaded.");
-            //     directions.setOrigin(origin);
-            //     directions.setDestination(destination);
-            // });
             map.current.on('load', () => {
                 console.log(mapData.origin);
                 if (mapData.origin && mapData.destination) {
@@ -119,15 +103,12 @@ export default function RiderDashboard() {
 
         const handleModalShown = () => {
             if (!map.current) {
-                // console.log("ok")
                 handleMapLoad();
             } else {
                 setTimeout(() => {
                     if (map.current) {
                         map.current = null;
                     }
-                    // if (map.current) map.current.resize();
-                    // console.log("Map resized.");
                 }, 200);
             }
         };
@@ -337,23 +318,23 @@ export default function RiderDashboard() {
         }
     }
 
-    function haversineDistance(lat1, lon1, lat2, lon2) {
-        const toRadians = (degree) => (degree * Math.PI) / 180;
+    // function haversineDistance(lat1, lon1, lat2, lon2) {
+    //     const toRadians = (degree) => (degree * Math.PI) / 180;
 
-        const R = 6371;
-        const dLat = toRadians(lat2 - lat1);
-        const dLon = toRadians(lon2 - lon1);
+    //     const R = 6371;
+    //     const dLat = toRadians(lat2 - lat1);
+    //     const dLon = toRadians(lon2 - lon1);
 
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    //     const a =
+    //         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    //         Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    //         Math.sin(dLon / 2) * Math.sin(dLon / 2);
 
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    //     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        const distance = R * c;
-        return distance;
-    }
+    //     const distance = R * c;
+    //     return distance;
+    // }
 
     const handleRejectDeliveryRequest = async (donationID) => {
         console.log(donationID)
@@ -372,7 +353,7 @@ export default function RiderDashboard() {
             console.log("Result:", result);
 
             //deleted the previously created inboxes for rider
-            const response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}`, {
+            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}/${user_id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -402,6 +383,7 @@ export default function RiderDashboard() {
             
                     let result3 = await response3.json();
                     console.log("Result:", result3);
+                    window.location.reload();
                 }
             });
             
@@ -503,7 +485,7 @@ export default function RiderDashboard() {
                                             <h6 className='mb-0'><span className='text-muted'>Delivery Location:</span> {item.doneeInfo.address}</h6>
                                         </div>
                                         <div className="d-flex justify-content-center text-center me-3">
-                                            <button type="button" className='mb-0 text-primary mx-2' data-bs-toggle="modal" data-bs-target="#mapModal" onClick={() => handleShowMapModal(item.donorInfo, item.doneeInfo)}>Map</button>
+                                            <button type="button" className='mb-0 text-primary mx-2' data-bs-toggle="modal" data-bs-target="#mapModal" onClick={() => handleShowMapModal(item.post_lon, item.post_lat, item.doneeInfo)}>Map</button>
 
                                             <button className='mb-0 text-success mx-2' onClick={() => {
                                                 const modalElement = new window.bootstrap.Modal(document.getElementById('acceptDelivery'));
@@ -597,7 +579,7 @@ export default function RiderDashboard() {
                                         <div className="col-md-6 mb-4" key={index}>
                                             <div className="card shadow rounded runningCard me-2">
                                                 <div className='d-flex justify-content-between  mt-2'>
-                                                    <button type="button" className='mb-0 text-success ms-3' data-bs-toggle="modal" data-bs-target="#mapModal" onClick={() => handleShowMapModal(item.donorInfo, item.doneeInfo)}>Map</button>
+                                                    <button type="button" className='mb-0 text-success ms-3' data-bs-toggle="modal" data-bs-target="#mapModal" onClick={() => handleShowMapModal(item.post_lon, item.post_lat, item.doneeInfo)}>Map</button>
                                                     <div className="d-flex align-items-center justify-content-center mx-5">
                                                         <div className="dropdown">
                                                             <CiMenuKebab
@@ -626,7 +608,7 @@ export default function RiderDashboard() {
                                                         <div className="card shadow-sm rounded innerCard p-3">
                                                             <div className='d-flex justify-content-between'>
                                                                 <h6 className='mb-0'>Pickup Information</h6>
-                                                                <a href="" className='riderMessageLink' onClick={() => handleContactButtonClick(item.donorInfo.id)}style={{ textDecoration: "none" }}>Message A</a>
+                                                                <a href="" className='riderMessageLink' onClick={() => handleContactButtonClick(item.donation_id,item.donorInfo.id)}style={{ textDecoration: "none" }}>Message A</a>
                                                             </div>
                                                             <hr />
                                                             <div className='d-flex align-items-center mb-3'>
@@ -649,7 +631,7 @@ export default function RiderDashboard() {
                                                         <div className="card shadow-sm rounded innerCard p-3">
                                                             <div className='d-flex justify-content-between'>
                                                                 <h6 className='mb-0'>Receiver Information</h6>
-                                                                <a href="" className='riderMessageLink'  onClick={() => handleContactButtonClick(item.doneeInfo.name)}style={{ textDecoration: "none" }}>Message</a>
+                                                                <a href="" className='riderMessageLink'  onClick={() => handleContactButtonClick(item.donation_id,item.doneeInfo.id)}style={{ textDecoration: "none" }}>Message</a>
                                                             </div>
                                                             <hr />
                                                             <div className='d-flex align-items-center mb-3'>

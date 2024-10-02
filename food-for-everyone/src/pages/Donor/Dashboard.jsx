@@ -8,8 +8,13 @@ import { RiUserReceived2Fill } from 'react-icons/ri';
 import { CiMenuKebab } from 'react-icons/ci';
 import { HiMapPin } from 'react-icons/hi2';
 import { RiTimeFill } from 'react-icons/ri';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import mapboxgl from 'mapbox-gl';
+import MapboxDirections from '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import '@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css';
+mapboxgl.accessToken = 'pk.eyJ1IjoiYXJtYW4yOTYiLCJhIjoiY20wOWYwejBlMTJhajJrb21qOTR0YWYxYSJ9.2NVdAp3kdgwt2g9WBZeBJw';
 
 export default function Dashboard() {
     const [selectedDonation, setSelectedDonation] = useState(null);
@@ -22,10 +27,15 @@ export default function Dashboard() {
     const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
     const [message, setMessage] = useState("")
+    const [message1, setMessage1] = useState("")
+    const mapContainer = useRef(null);
+    const map = useRef(null);
+    const user_id = localStorage.getItem('user_id');
+    const [mapData, setMapData] = useState({ origin: null, destination: null });
 
-    const handleContactButtonClick = (donation_id) => { 
+    const handleContactButtonClick = (donation_id) => {
         navigate('/message', { state: { donation_id } });
-      };
+    };
 
     const handleDetailsModal = (donation) => {
         setSelectedDonation(donation);
@@ -53,10 +63,107 @@ export default function Dashboard() {
     const okButton = () => {
         window.location.reload();
     }
+
+    const handleShowMapModal = (post_lon, post_lat, doneeLon, doneeLat) => {
+        const origin = [post_lon, post_lat];
+        const destination = [doneeLon, doneeLat];
+        console.log('Setting mapData:', { origin, destination });
+        setMapData({
+            origin,
+            destination,
+        });
+    };
+
+    useEffect(() => {
+        const modalElement = document.getElementById('mapModal');
+        const handleMapLoad = () => {
+            if (!mapContainer.current) {
+                console.error("Map container is not available.");
+                return;
+            }
+            console.log("Initializing map...");
+            map.current = new mapboxgl.Map({
+                container: mapContainer.current,
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: mapData.origin,
+                zoom: 10,
+            });
+
+            const directions = new MapboxDirections({
+                accessToken: mapboxgl.accessToken,
+                unit: 'metric',
+                profile: 'mapbox/driving',
+                interactive: false,
+                controls: {
+                    instructions: false,
+                },
+            });
+
+            map.current.addControl(directions, 'top-left');
+            map.current.on('load', () => {
+                console.log(mapData.origin);
+                if (mapData.origin && mapData.destination) {
+                    directions.setOrigin(mapData.origin);
+                    directions.setDestination(mapData.destination);
+                }
+            });
+
+            const handleGeolocation = (position) => {
+                const { longitude, latitude } = position.coords;
+                map.current.setCenter([longitude, latitude]);
+                directions.setOrigin([longitude, latitude]);
+            };
+
+            const handleGeolocationError = () => {
+                map.current.setCenter([-2.24, 53.48]);
+            };
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(handleGeolocation, handleGeolocationError, {
+                    enableHighAccuracy: true,
+                });
+            } else {
+                handleGeolocationError();
+            }
+        };
+
+        const handleModalShown = () => {
+            if (!map.current) {
+                handleMapLoad();
+            } else {
+                setTimeout(() => {
+                    if (map.current) {
+                        map.current = null;
+                    }
+                }, 200);
+            }
+        };
+
+        const handleResize = () => {
+            if (map.current) {
+                map.current.resize();
+            }
+        };
+
+        if (modalElement) {
+            modalElement.addEventListener('shown.bs.modal', handleModalShown);
+        } else {
+            console.error("Modal element is not found.");
+        }
+        window.addEventListener('resize', handleResize);
+        return () => {
+            if (map.current) map.current.remove();
+            if (modalElement) {
+                modalElement.removeEventListener('shown.bs.modal', handleModalShown);
+            }
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [mapData]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const user_id = localStorage.getItem('user_id');
+               
                 const responseIds = await fetch(`http://localhost:8000/api/donation-posts/${user_id}`, {
                     method: 'GET',
                     headers: {
@@ -149,19 +256,19 @@ export default function Dashboard() {
                 alert('Error: ' + result.message);
             }
             //delete inbox
-            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}`, {
-                method: 'GET', 
+            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}/${user_id}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
             });
-            if (!response2.ok) {
-                const errorData = await response2.json();
-                throw new Error(`Error fetching response2: ${errorData.message || 'Unknown error'}`);
-            }
-            const result2 = await response2.json(); 
-            console.log(result2);
+            // if (!response2.ok) {
+            //     const errorData = await response2.json();
+            //     throw new Error(`Error fetching response2: ${errorData.message || 'Unknown error'}`);
+            // }
+            // const result2 = await response2.json();
+            // console.log(result2);
         } catch (error) {
             console.error('Error:', error);
             alert('An error occurred' + error.message);
@@ -182,17 +289,17 @@ export default function Dashboard() {
                 },
                 body: JSON.stringify(item)
             });
-    
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-    
+
             let result = await response.json();
             console.log("Result:", result);
 
 
-            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}`, {
-                method: 'GET', 
+            let response2 = await fetch(`http://localhost:8000/api/deleteInboxes/${donationID}/${user_id}`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -202,12 +309,15 @@ export default function Dashboard() {
                 const errorData = await response2.json();
                 throw new Error(`Error fetching response2: ${errorData.message || 'Unknown error'}`);
             }
-            const result2 = await response2.json(); 
+            const result2 = await response2.json();
             console.log(result2);
-    
+
             if (result.success) {
-                alert('Donation canceled successfully!');
-                window.location.reload();
+                setMessage1("Rejected Successfully")
+                const modalElement = new window.bootstrap.Modal(document.getElementById('cancelModal'));
+                modalElement.show();
+                // alert('Donation canceled successfully!');
+                // window.location.reload();
             } else {
                 alert('Error: ' + result.message);
             }
@@ -217,7 +327,7 @@ export default function Dashboard() {
             alert('An error occurred while canceling the donation. ' + error.message);
         }
     };
-    
+
     const handleCancelPost = async (donationId) => {
         console.log(donationId)
         const url = 'http://localhost:8000/api/delete-donation';
@@ -236,6 +346,7 @@ export default function Dashboard() {
             let result = await response.json();
             console.log("Result:", result);
             if (result.success) {
+                setMessage1("Donation canceled successfully!")
                 const modalElement = new window.bootstrap.Modal(document.getElementById('cancelModal'));
                 modalElement.show();
                 // alert('Donation canceled successfully!');
@@ -248,11 +359,13 @@ export default function Dashboard() {
             alert('An error occurred while canceling the donation. ' + error.message);
         }
     };
- 
+
 
     if (error) {
         return <div>Error: {error}</div>;
     }
+
+
 
     return (
         <div>
@@ -304,6 +417,7 @@ export default function Dashboard() {
                                                                                         style={{ cursor: 'pointer' }}
                                                                                     />
                                                                                     <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+
                                                                                         <li>
                                                                                             <button
                                                                                                 className="dropdown-item"
@@ -415,6 +529,13 @@ export default function Dashboard() {
                                                                                 style={{ cursor: 'pointer' }}
                                                                             />
                                                                             <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                                <li>
+                                                                                    <button
+                                                                                        className="dropdown-item" data-bs-toggle="modal" data-bs-target="#mapModal" onClick={() => handleShowMapModal(donations.donationPost.location_lon, donations.donationPost.location_lat, donations.doneeLon, donations.doneeLat)}
+                                                                                    >
+                                                                                        Map
+                                                                                    </button>
+                                                                                </li>
                                                                                 <li><button className="dropdown-item" onClick={() => handleRejectOnRun(donations.donationPost.donation_id)}>Cancel</button></li>
                                                                                 <li><button className="dropdown-item" data-bs-toggle="modal" data-bs-target="#detailsModal" onClick={() => handleDetailsModal(donations)}>Details</button></li>
                                                                                 <li ><button className="dropdown-item text-success" onClick={() => handleAcceptDonation(donations.donationPost.donation_id)}>Mark as Delivered</button></li>
@@ -556,13 +677,12 @@ export default function Dashboard() {
                                                                     </div>
                                                                     <div className="col-4 d-flex flex-column justify-content-center">
                                                                         <div>
-                                                                        <button 
-    className='btn donationButton' 
-    onClick={() => handleContactButtonClick(donations.donationPost.donation_id)} 
-    style={{ backgroundColor: "yellow" }}>
-    Contact 
-    
-</button>
+                                                                            <button
+                                                                                className='btn donationButton'
+                                                                                onClick={() => handleContactButtonClick(donations.donationPost.donation_id)}
+                                                                                style={{ backgroundColor: "yellow" }}>
+                                                                                Contact
+                                                                            </button>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -607,7 +727,7 @@ export default function Dashboard() {
                                         </div>
                                         <div className="modal-body">
                                             <div className="mb-3 mt-2 ">
-                                                Your Post has been deleted
+                                                {message1}
                                             </div>
                                         </div>
                                         <div className="modal-footer">
@@ -616,7 +736,24 @@ export default function Dashboard() {
                                     </div>
                                 </div>
                             </div>
+                            <div className="modal fade" id="mapModal" data-bs-backdrop="static" data-bs-keyboard="false" role="dialog" tabIndex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+                                <div className="modal-dialog modal-lg">
+                                    <div className="modal-content">
+                                        <div className="modal-header">
+                                            <div>
+                                                <h6 className="modal-title text-info" id="mapModalLabel">A: Pickup Point</h6>
+                                                <h6 className="modal-title" id="mapModalLabel" style={{ color: "#a47ae2" }}>B: Delivery Point</h6>
+                                            </div>
+                                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <div ref={mapContainer} style={{ height: '50vh', width: '100%' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>
